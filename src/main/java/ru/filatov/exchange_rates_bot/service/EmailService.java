@@ -20,7 +20,7 @@ public class EmailService {
     private String fromEmail = "entsog4@gmail.com";
     private String password="ozygbkhtzbaqiwio";
 
-    public void sendEmailWithAttachment(String toEmail, String subject, String body, List<ExcelFile> excelFiles) throws IOException, MessagingException {
+    public void sendEmailWithAttachment(List<String> toEmails, String subject, String body, List<ExcelFile> excelFiles) throws IOException, MessagingException {
         Properties properties = new Properties();
         properties.put("mail.smtp.auth", "true");
         properties.put("mail.smtp.starttls.enable", "true");
@@ -35,7 +35,18 @@ public class EmailService {
 
         Message message = new MimeMessage(session);
         message.setFrom(new InternetAddress(fromEmail));
-        message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
+        InternetAddress[] recipientAddresses = toEmails.stream().map(email -> {
+            try {
+                return new InternetAddress(email);
+            } catch (AddressException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }).toArray(InternetAddress[]::new);
+
+        message.setRecipients(Message.RecipientType.TO, recipientAddresses);
+
+
         message.setSubject(subject);
 
         Multipart multipart = new MimeMultipart();

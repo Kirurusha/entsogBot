@@ -14,7 +14,7 @@ public class ScheduledTasksService {
 
     // Внедряем зависимость через конструктор
 
-    @Scheduled(cron = "0 13 12 * * *") // Запускается каждый день в 5:00 утра
+    @Scheduled(cron = "0 0 5 * * *") // Запускается каждый день в 5:00 утра
     public void performTask() {
         exchangeRatesBot.fetchAndProcessData();
     }

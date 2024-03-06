@@ -39,8 +39,17 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
     private static final String HELP = "/help";
     private static final String LOVE = "/love";
     private static final String EXCEL = "/excel";
+
+    private static final String physicalflow = "Physical%20Flow";
+    private static final String renomination ="Renomination" ;
+    private static final String nomination ="Nomination" ;
+    private static final String allocation ="Allocation" ;
+    private static final String gcv ="GCV" ;
     private static List<ExcelFile> excelFilesDays = new ArrayList<>();
     private static List<ExcelFile> excelFilesHours= new ArrayList<>();
+
+    private static List<String> recipients = Arrays.asList("kirillfilatoww@mail.ru", "operatorsouth@gazpromexport.gazprom.ru"
+            , "operator@gazpromexport.gazprom.ru");
 
 
     private static final List<String> DAY_POINTS_SET_1 = Arrays.asList(
@@ -124,22 +133,32 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
         // Логика для загрузки и обработки данных
         long delay =3000;
 
+
+
         try {
-            handleDayFiles(null, DAY_POINTS_SET_1);
 
+            handleDayFiles(null, DAY_POINTS_SET_2,renomination);
+            Thread.sleep(delay );
+            handleDayFiles(null, DAY_POINTS_SET_2,allocation);
+            Thread.sleep(delay );
+            handleDayFiles(null, DAY_POINTS_SET_1,physicalflow);
+            Thread.sleep(delay );
+            handleDayFiles(null, DAY_POINTS_SET_2,physicalflow);
+            Thread.sleep(delay );
+            handleDayFiles(null, DAY_POINTS_SET_1,gcv);
+            Thread.sleep(delay );
+            handleDayFiles(null, DAY_POINTS_SET_2,gcv);
+            Thread.sleep(delay );
+            handleDayFiles(null, DAY_POINTS_SET_2,nomination);
+            Thread.sleep(delay );
+            handleHourFile(null, DAY_POINTS_SET_2,physicalflow);
             Thread.sleep(delay );
 
-            handleHourFile(null, DAY_POINTS_SET_1);
-            Thread.sleep(delay );
-
-            handleDayFiles(null, DAY_POINTS_SET_2);
-            Thread.sleep(delay );
-            handleHourFile(null, DAY_POINTS_SET_2);
-            Thread.sleep(delay );
 
 
-            emailService.sendEmailWithAttachment("kirillfilatoww@mail.ru", "Files from Entsog with daily data", "Test", excelFilesDays);
-            emailService.sendEmailWithAttachment("kirillfilatoww@mail.ru", "Files from Entsog with hourly data", "Test", excelFilesHours);
+
+            emailService.sendEmailWithAttachment(recipients, "Files from Entsog with daily data", "Test", excelFilesDays);
+            emailService.sendEmailWithAttachment(recipients, "Files from Entsog with hourly data", "Test", excelFilesHours);
 
             excelFilesHours.clear();
             excelFilesDays.clear();
@@ -184,20 +203,25 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
             }
             case EXCEL -> {
                 try {
-                handleDayFiles(chatId, DAY_POINTS_SET_1);
-
+                    handleDayFiles(null, DAY_POINTS_SET_2,renomination);
+                    Thread.sleep(delay );
+                    handleDayFiles(null, DAY_POINTS_SET_2,allocation);
+                    Thread.sleep(delay );
+                    handleDayFiles(null, DAY_POINTS_SET_1,physicalflow);
+                    Thread.sleep(delay );
+                    handleDayFiles(null, DAY_POINTS_SET_2,physicalflow);
+                    Thread.sleep(delay );
+                    handleDayFiles(null, DAY_POINTS_SET_1,gcv);
+                    Thread.sleep(delay );
+                    handleDayFiles(null, DAY_POINTS_SET_2,gcv);
+                    Thread.sleep(delay );
+                    handleDayFiles(null, DAY_POINTS_SET_2,nomination);
+                    Thread.sleep(delay );
+                    handleHourFile(null, DAY_POINTS_SET_2,physicalflow);
                     Thread.sleep(delay );
 
-                handleHourFile(chatId, DAY_POINTS_SET_1);
-                Thread.sleep(delay );
-
-                handleDayFiles(chatId, DAY_POINTS_SET_2);
-                Thread.sleep(delay );
-                handleHourFile(chatId, DAY_POINTS_SET_2);
-                Thread.sleep(delay );
-
-                    emailService.sendEmailWithAttachment("kirillfilatoww@mail.ru", "Files from Entsog with daily data", "Test", excelFilesDays);
-                    emailService.sendEmailWithAttachment("kirillfilatoww@mail.ru", "Files from Entsog with hourly data", "Test", excelFilesHours);
+                    emailService.sendEmailWithAttachment(recipients, "Files from Entsog with daily data", "Test", excelFilesDays);
+                    emailService.sendEmailWithAttachment(recipients, "Files from Entsog with hourly data", "Test", excelFilesHours);
 
                     excelFilesHours.clear();
                     excelFilesDays.clear();
@@ -302,7 +326,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
         try {
             var usd = exchangeRatesService.getUSDExchangeRate();
             var text = "Курс доллара на %s составляет %s рублей";
-            emailService.sendEmailWithAttachment("kirillfilatoww@mail.ru", "Test", "Test",null);
+            emailService.sendEmailWithAttachment(recipients, "Test", "Test",null);
             formattedText = String.format(text, LocalDate.now(), usd);
         } catch (ServiceException e) {
             LOG.error("Ошибка при получении доллара", e);
@@ -328,20 +352,21 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
         }
         sendMessage(chatId, formattedText);
     }
-    private void handleDayFiles(Long chatId, List<String> dayPointDirections) {
+    private void handleDayFiles(Long chatId, List<String> dayPointDirections, String fileType ) {
         try {
 
             String[] fileTypes = { "Physical%20Flow","Renomination", "GCV", "Nomination"};
+
             int[][] periods = {{11, -8}, {7, -4}, {3, 1}};
 
-            for (String fileType : fileTypes) {
+
                 for (int[] period : periods) {
                     ExcelFile file = exchangeRatesService.getExcelFile("day", dayPointDirections, period[0], period[1], fileType);
 
                     excelFilesDays.add(file);
 
                 }
-            }
+
 
 
             // sendExcelFile(chatId, dayFile1);
@@ -352,18 +377,18 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
         }
     }
 
-    private void handleHourFile(Long chatId, List<String> hourPointDirections) {
+    private void handleHourFile(Long chatId, List<String> hourPointDirections, String fileType) {
         try {
             // Файл для часов\
-            String[] fileTypes = { "Physical%20Flow"};
+           // String[] fileTypes = { "Physical%20Flow"};
             int[][] periods = {{2, -2}, {1, -1}, {0, 0}, {-1, 1}};
 
-            for (String fileType : fileTypes) {
+            //for (String fileType : fileTypes) {
                 for (int[] period : periods) {
                     ExcelFile file = exchangeRatesService.getExcelFile("hour", hourPointDirections, period[0], period[1], fileType);
                     excelFilesHours.add(file);
                 }
-            }
+
 
 
         } catch (ServiceException  e) {
