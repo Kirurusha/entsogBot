@@ -19,6 +19,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.filatov.exchange_rates_bot.Exception.ServiceException;
 import ru.filatov.exchange_rates_bot.entity.ExcelFile;
 import ru.filatov.exchange_rates_bot.service.EmailService;
+import ru.filatov.exchange_rates_bot.service.ExcelFileArchiver;
 import ru.filatov.exchange_rates_bot.service.ExchangeRatesService;
 
 import javax.mail.MessagingException;
@@ -26,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -48,8 +50,11 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
     private static List<ExcelFile> excelFilesDays = new ArrayList<>();
     private static List<ExcelFile> excelFilesHours= new ArrayList<>();
 
-    private static List<String> recipients = Arrays.asList("kirillfilatoww@mail.ru", "operatorsouth@gazpromexport.gazprom.ru"
-            , "operator@gazpromexport.gazprom.ru");
+    //rivate static List<String> recipients = Arrays.asList("kirillfilatoww@mail.ru", "operatorsouth@gazpromexport.gazprom.ru"
+     //       , "operator@gazpromexport.gazprom.ru");
+    private static List<String> recipients = Arrays.asList("kirillfilatoww@mail.ru");
+@Autowired
+    private ExcelFileArchiver excelFileArchiver;
 
 
     private static final List<String> DAY_POINTS_SET_1 = Arrays.asList(
@@ -131,7 +136,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
     public void fetchAndProcessData() {
         System.out.println("Загрузка и обработка данных. Текущее время: " + LocalDateTime.now());
         // Логика для загрузки и обработки данных
-        long delay =3000;
+        long delay =1000;
 
 
 
@@ -139,26 +144,42 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
             handleDayFiles(null, DAY_POINTS_SET_2,renomination);
             Thread.sleep(delay );
-            handleDayFiles(null, DAY_POINTS_SET_2,allocation);
-            Thread.sleep(delay );
-            handleDayFiles(null, DAY_POINTS_SET_1,physicalflow);
-            Thread.sleep(delay );
-            handleDayFiles(null, DAY_POINTS_SET_2,physicalflow);
-            Thread.sleep(delay );
-            handleDayFiles(null, DAY_POINTS_SET_1,gcv);
-            Thread.sleep(delay );
-            handleDayFiles(null, DAY_POINTS_SET_2,gcv);
-            Thread.sleep(delay );
-            handleDayFiles(null, DAY_POINTS_SET_2,nomination);
-            Thread.sleep(delay );
-            handleHourFile(null, DAY_POINTS_SET_2,physicalflow);
-            Thread.sleep(delay );
+           handleDayFiles(null, DAY_POINTS_SET_2,allocation);
+           Thread.sleep(delay );
+           handleDayFiles(null, DAY_POINTS_SET_1,physicalflow);
+           Thread.sleep(delay );
+           handleDayFiles(null, DAY_POINTS_SET_2,physicalflow);
+           Thread.sleep(delay );
+           handleDayFiles(null, DAY_POINTS_SET_1,gcv);
+           Thread.sleep(delay );
+           handleDayFiles(null, DAY_POINTS_SET_2,gcv);
+           Thread.sleep(delay );
+           handleDayFiles(null, DAY_POINTS_SET_2,nomination);
+           Thread.sleep(delay );handleHourFile(null, DAY_POINTS_SET_2,physicalflow);
+           Thread.sleep(delay );
+
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String formatDateTime = now.format(formatter);
 
 
 
+            String archiveName = "entsog_" + formatDateTime + ".zip";
 
-            emailService.sendEmailWithAttachment(recipients, "Files from Entsog with daily data", "Test", excelFilesDays);
-            emailService.sendEmailWithAttachment(recipients, "Files from Entsog with hourly data", "Test", excelFilesHours);
+
+
+            excelFileArchiver.createArchive(archiveName);
+
+            excelFileArchiver.addFilesToArchive("hours",excelFilesHours);
+            excelFileArchiver.addFilesToArchive("days",excelFilesDays);
+
+
+            emailService.sendEmailWithAttachment(recipients, "Files from Entsog with data", "Коллеги, такой файл, по идее, будет начинать выгружаться" +
+                    " в 5 часов утра по Москве и приходить к вам на почту на ежедневной основе. Если перестанет работать, то пишите", null,excelFileArchiver.closeArchive());
+
+
+//            emailService.sendEmailWithAttachment(recipients, "Files from Entsog with daily data", "Test", excelFilesDays);
+//            emailService.sendEmailWithAttachment(recipients, "Files from Entsog with hourly data", "Test", excelFilesHours);
 
             excelFilesHours.clear();
             excelFilesDays.clear();
@@ -189,7 +210,8 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                 startCommand(chatId, userName);
             }
             case USD -> {
-                usdCommand(chatId);
+                this.fetchAndProcessData();
+               // usdCommand(chatId);
 
             }
             case EUR -> {
@@ -203,6 +225,8 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
             }
             case EXCEL -> {
                 try {
+
+                    ;
                     handleDayFiles(null, DAY_POINTS_SET_2,renomination);
                     Thread.sleep(delay );
                     handleDayFiles(null, DAY_POINTS_SET_2,allocation);
@@ -220,8 +244,8 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                     handleHourFile(null, DAY_POINTS_SET_2,physicalflow);
                     Thread.sleep(delay );
 
-                    emailService.sendEmailWithAttachment(recipients, "Files from Entsog with daily data", "Test", excelFilesDays);
-                    emailService.sendEmailWithAttachment(recipients, "Files from Entsog with hourly data", "Test", excelFilesHours);
+                    emailService.sendEmailWithAttachment(recipients, "Files from Entsog with daily data", "Test", excelFilesDays,"");
+                    emailService.sendEmailWithAttachment(recipients, "Files from Entsog with hourly data", "Test", excelFilesHours,"");
 
                     excelFilesHours.clear();
                     excelFilesDays.clear();
@@ -326,7 +350,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
         try {
             var usd = exchangeRatesService.getUSDExchangeRate();
             var text = "Курс доллара на %s составляет %s рублей";
-            emailService.sendEmailWithAttachment(recipients, "Test", "Test",null);
+            emailService.sendEmailWithAttachment(recipients, "Test", "Test",null,"");
             formattedText = String.format(text, LocalDate.now(), usd);
         } catch (ServiceException e) {
             LOG.error("Ошибка при получении доллара", e);

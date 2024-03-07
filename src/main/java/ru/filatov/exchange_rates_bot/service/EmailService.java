@@ -20,7 +20,7 @@ public class EmailService {
     private String fromEmail = "entsog4@gmail.com";
     private String password="ozygbkhtzbaqiwio";
 
-    public void sendEmailWithAttachment(List<String> toEmails, String subject, String body, List<ExcelFile> excelFiles) throws IOException, MessagingException {
+    public void sendEmailWithAttachment(List<String> toEmails, String subject, String body, List<ExcelFile> excelFiles, String archivePath) throws MessagingException, IOException {
         Properties properties = new Properties();
         properties.put("mail.smtp.auth", "true");
         properties.put("mail.smtp.starttls.enable", "true");
@@ -45,17 +45,25 @@ public class EmailService {
         }).toArray(InternetAddress[]::new);
 
         message.setRecipients(Message.RecipientType.TO, recipientAddresses);
-
-
         message.setSubject(subject);
 
         Multipart multipart = new MimeMultipart();
-
         BodyPart messageBodyPart = new MimeBodyPart();
         messageBodyPart.setText(body);
         multipart.addBodyPart(messageBodyPart);
 
-        if (excelFiles != null && !excelFiles.isEmpty()) {
+        if (archivePath != null && !archivePath.isEmpty()) {
+            // Если путь к архиву предоставлен, прикрепляем только архив
+            File archiveFile = new File(archivePath);
+            if (archiveFile.exists()) {
+                BodyPart attachmentBodyPart = new MimeBodyPart();
+                DataSource source = new FileDataSource(archiveFile);
+                attachmentBodyPart.setDataHandler(new DataHandler(source));
+                attachmentBodyPart.setFileName(archiveFile.getName());
+                multipart.addBodyPart(attachmentBodyPart);
+            }
+        } else if (excelFiles != null && !excelFiles.isEmpty()) {
+            // Если список Excel файлов предоставлен, прикрепляем их
             for (ExcelFile excelFile : excelFiles) {
                 File tempFile = File.createTempFile(excelFile.getFilename(), ".xlsx");
                 tempFile.deleteOnExit();
@@ -79,6 +87,12 @@ public class EmailService {
         message.setContent(multipart);
         Transport.send(message);
 
-        System.out.println("Email sent successfully with " + (excelFiles != null ? excelFiles.size() + " attachments." : "no attachments."));
+        if (archivePath != null && !archivePath.isEmpty()) {
+            System.out.println("Email sent successfully with archive.");
+        } else if (excelFiles != null && !excelFiles.isEmpty()) {
+            System.out.println("Email sent successfully with Excel files.");
+        } else {
+            System.out.println("Email sent successfully with no attachments.");
+        }
     }
 }

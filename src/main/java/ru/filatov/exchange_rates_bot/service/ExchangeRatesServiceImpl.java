@@ -22,6 +22,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
@@ -69,9 +70,12 @@ public class ExchangeRatesServiceImpl implements ExchangeRatesService {
                 "?forceDownload=true&isTransportData=true&dataset=1&from=%s&to=%s&indicators=%s&periodType=%s&timezone=CET&periodize=0&limit=-1&pointDirection=%s",
                 formattedStartDate, formattedEndDate,reqType, periodType, URLEncoder.encode(pointDirectionsParam, StandardCharsets.UTF_8)
         );
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String formatDateTime = now.format(formatter);
 
         String fullUrl = baseUrl + queryParams;
-        System.out.println(fullUrl);
+        System.out.println(fullUrl +" " + formatDateTime  );
 
 
         int maxAttempts = 60;

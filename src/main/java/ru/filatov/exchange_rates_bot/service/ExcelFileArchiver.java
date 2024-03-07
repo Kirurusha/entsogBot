@@ -1,0 +1,48 @@
+package ru.filatov.exchange_rates_bot.service;
+
+import org.springframework.stereotype.Service;
+import ru.filatov.exchange_rates_bot.entity.ExcelFile;
+
+import java.io.*;
+import java.util.List;
+import java.util.zip.*;
+
+@Service
+public class ExcelFileArchiver {
+
+    private ZipOutputStream zos;  // Объявление переменной на уровне класса
+    private String archivePath;
+
+    // Инициализация ZipOutputStream перенесена в отдельный метод
+    public void createArchive(String archiveName) throws IOException {
+        this.archivePath = archiveName;
+        FileOutputStream fos = new FileOutputStream(archivePath);
+        this.zos = new ZipOutputStream(fos);  // Инициализация zos
+    }
+
+    public void addFilesToArchive(String folderName, List<ExcelFile> files) throws IOException {
+        if (zos == null) {
+            throw new IllegalStateException("Archive is not initialized. Call createArchive first.");
+        }
+
+        for (ExcelFile file : files) {
+            ZipEntry zipEntry = new ZipEntry(folderName + "/" + file.getFilename());
+            zos.putNextEntry(zipEntry);
+            try (InputStream in = file.getInputStream()) {
+                byte[] buffer = new byte[1024];
+                int length;
+                while ((length = in.read(buffer)) > 0) {
+                    zos.write(buffer, 0, length);
+                }
+            }
+            zos.closeEntry();
+        }
+    }
+
+    public String closeArchive() throws IOException {
+        if (zos != null) {
+            zos.close();  // Закрытие ZipOutputStream
+        }
+        return archivePath;
+    }
+}
