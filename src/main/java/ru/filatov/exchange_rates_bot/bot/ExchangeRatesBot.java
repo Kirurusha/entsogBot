@@ -101,10 +101,44 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
 
     );
+    private static final List<String> DAY_POINTS_SET_3 = Arrays.asList(
+
+            "ua-tso-0001itp-10008exit",
+            "pl-tso-0002itp-10008entry",
+            "ua-tso-0001itp-10008entry",
+            "pl-tso-0002itp-10008exit",
+            "sk-tso-0001itp-00117exit",
+            "ua-tso-0001itp-00117entry",
+            "sk-tso-0001itp-00117entry",
+            "ua-tso-0001itp-00117exit",
+            "sk-tso-0001itp-00421exit",
+            "ua-tso-0001itp-00421entry",
+            "ua-tso-0001itp-00421exit",
+            "sk-tso-0001itp-00421entry",
+            "hu-tso-0001itp-10006exit",
+            "ua-tso-0001itp-10006entry",
+            "ua-tso-0001itp-10006exit",
+            "hu-tso-0001itp-10006entry",
+            "ua-tso-0001itp-00429exit",
+            "ua-tso-0001itp-00429entry",
+            "ua-tso-0001itp-00428exit",
+            "ua-tso-0001itp-00428entry",
+            "ua-tso-0001itp-00440exit",
+            "ua-tso-0001itp-00440entry",
+            "ua-tso-0001itp-00087exit",
+            "ro-tso-0001itp-00087entry",
+            "ro-tso-0001itp-00087exit",
+            "ua-tso-0001itp-00087entry",
+            "ua-tso-0001itp-00444exit",
+            "ua-tso-0001itp-00444entry"
+
+
+    );
     private static final List<ExcelFile> excelFilesDays = new ArrayList<>();
     private static final List<ExcelFile> excelFilesHours = new ArrayList<>();
     private static List<String> recipients = Arrays.asList("kirillfilatoww@mail.ru", "operatorsouth@gazpromexport.gazprom.ru"
            , "operator@gazpromexport.gazprom.ru");
+    private static List<String> recipientsExport = Arrays.asList("kirillfilatoww@mail.ru", "cpdd-export@adm.gazprom.ru");
     //private static final List<String> recipients = List.of("kirillfilatoww@mail.ru");
     String gifUrl = "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExODFxM2E4b3l2djZoNDd0bXRldGkwOXh4cjFjY3djbzEyd3B6MmFpMSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/5kpRuktAKcNXy4p1is/giphy.gif";
     @Autowired
@@ -118,6 +152,51 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
         super(botToken);
 
     }
+
+    public void fetchAndProcessDataForExport() {
+        System.out.println("Загрузка и обработка данных. Текущее время: " + LocalDateTime.now());
+        // Логика для загрузки и обработки данных
+        long delay = 1000;
+
+
+        try {
+
+            handleDayFiles(null, DAY_POINTS_SET_3, renomination);
+            Thread.sleep(delay);
+            handleDayFiles(null, DAY_POINTS_SET_3, allocation);
+            Thread.sleep(delay);
+            handleDayFiles(null, DAY_POINTS_SET_3, physicalflow);
+            Thread.sleep(delay);
+            handleDayFiles(null, DAY_POINTS_SET_3, gcv);
+            Thread.sleep(delay);
+            handleDayFiles(null, DAY_POINTS_SET_3, nomination);
+            Thread.sleep(delay);
+
+
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String formatDateTime = now.format(formatter);
+            String archiveName = "entsog_" + formatDateTime + ".zip";
+            excelFileArchiver.createArchive(archiveName);
+
+
+            excelFileArchiver.addFilesToArchive("days", excelFilesDays);
+
+
+            emailService.sendEmailWithAttachment(recipientsExport, "Files from Entsog with data", "Коллеги, такой файл, по идее, будет начинать выгружаться" +
+                    " в 21:31  по Москве и приходить к вам на почту на ежедневной основе. Если перестанет работать, то пишите", null, excelFileArchiver.closeArchive());
+
+            excelFilesDays.clear();
+
+
+        } catch (InterruptedException | MessagingException | IOException e) {
+            throw new RuntimeException(e);
+        }
+
+
+
+    }
+
 
     public void fetchAndProcessData() {
         System.out.println("Загрузка и обработка данных. Текущее время: " + LocalDateTime.now());
