@@ -12,6 +12,7 @@ public interface ExchangeRatesService {
 
 
     ExcelFile getExcelFile(String periodType, List<String> pointDirections, int daysBefore, int daysAfter,String reqType) throws SecurityException, ServiceException;
+    ExcelFile getExcelFileForTSO(String periodType, List<String> pointDirections, int daysBefore, int daysAfter,String reqType) throws SecurityException, ServiceException;
 
 
 }

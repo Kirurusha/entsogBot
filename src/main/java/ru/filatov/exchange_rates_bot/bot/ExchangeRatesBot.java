@@ -23,6 +23,7 @@ import ru.filatov.exchange_rates_bot.service.ExcelFileArchiver;
 import ru.filatov.exchange_rates_bot.service.ExchangeRatesService;
 
 import javax.mail.MessagingException;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
@@ -47,19 +48,17 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
     private static final String nomination = "Nomination";
     private static final String allocation = "Allocation";
     private static final String gcv = "GCV";
+    private static final String allTypesNominations = "Nomination,Renomination,Allocation,Physical%20Flow,GCV";
+
+
+
+    //Nomination,Renomination,Allocation,Physical%20Flow,GCV&periodType=day&timezone=CET&periodize=0&limit=-1&isTransportData=true&dataset=1&operatorLabel=eustream,GAZ-SYSTEM,FGSZ,Transgaz,Gas TSO UA
+    private static final int[][] period1 = {{11, -8}, {7, -4}, {3, 1}};
+    private static final int[][] period2 = {{6, -1}};
+    private static final int[][] period3= {{2, 1}};
+
     private static final List<String> DAY_POINTS_SET_1 = Arrays.asList(
-//            "bg-tso-0001itp-00041entry",
-//            "bg-tso-0001itp-00549entry",
-//            "bg-tso-0001itp-00529exit",
-//            "bg-tso-0001itp-00128exit",
-//            "bg-tso-0001itp-00128entry",
-//            "bg-tso-0001itp-00036exit",
-//            "ua-tso-0001itp-00117exit",
-//            "at-tso-0001itp-00162entry",
-//            "at-tso-0001itp-00062entry",
-//            "at-tso-0003itp-00037entry",
-//            "de-tso-0001itp-00096exit",
-//            "sk-tso-0001itp-00051exit"
+
 
 
             "ua-tso-0001itp-00117exit",
@@ -70,18 +69,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
     );
     private static final List<String> DAY_POINTS_SET_2 = Arrays.asList(
-//            "sk-tso-0001itp-00117entry",
-//            "cz-tso-0001itp-00051exit",
-//            "sk-tso-0001itp-00051exit",
-//            "sk-tso-0001itp-00168exit",
-//            "de-tso-0001itp-00096entry",
-//            "bg-tso-0001itp-00058exit",
-//            "sk-tso-0001itp-00168exit",
-//            "de-tso-0001itp-00096entry",
-//            "de-tso-0001itp-00096exit",
-//            "hu-tso-0001itp-10013entry",
-//            "hu-tso-0001itp-10013entry",
-//            "bg-tso-0001itp-00058exit"
+
 
 
             "bg-tso-0001itp-00041entry",
@@ -134,6 +122,24 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
 
     );
+
+    private static final List<String> DAY_TSO_SET_4 = Arrays.asList(
+
+
+
+            "eustream",
+            "GAZ-SYSTEM",
+            "FGSZ",
+            "Transgaz",
+            "Gas TSO UA"
+
+    );
+
+
+
+    // https://transparency.entsog.eu/api/v1/operationalData.xlsx?forceDownload=true&from=2024-03-04&to=2024-03-10&indicator=Nomination,Renomination,Allocation,Physical%20Flow,GCV&periodType=day&timezone=CET&periodize=0&limit=-1&isTransportData=true&dataset=1&operatorLabel=eustream,GAZ-SYSTEM,FGSZ,Transgaz,Gas TSO UA
+
+
     private static final List<ExcelFile> excelFilesDays = new ArrayList<>();
     private static final List<ExcelFile> excelFilesHours = new ArrayList<>();
     private static List<String> recipients = Arrays.asList("kirillfilatoww@mail.ru", "operatorsouth@gazpromexport.gazprom.ru"
@@ -161,35 +167,71 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
         try {
 
-            handleDayFiles(null, DAY_POINTS_SET_3, renomination);
+            handleDayFiles(null, DAY_POINTS_SET_3, renomination,period1);
             Thread.sleep(delay);
-            handleDayFiles(null, DAY_POINTS_SET_3, allocation);
+            handleDayFiles(null, DAY_POINTS_SET_3, allocation,period1);
             Thread.sleep(delay);
-            handleDayFiles(null, DAY_POINTS_SET_3, physicalflow);
+            handleDayFiles(null, DAY_POINTS_SET_3, physicalflow,period1);
             Thread.sleep(delay);
-            handleDayFiles(null, DAY_POINTS_SET_3, gcv);
+            handleDayFiles(null, DAY_POINTS_SET_3, gcv,period1);
             Thread.sleep(delay);
-            handleDayFiles(null, DAY_POINTS_SET_3, nomination);
+            handleDayFiles(null, DAY_POINTS_SET_3, nomination,period1);
             Thread.sleep(delay);
 
 
             LocalDateTime now = LocalDateTime.now();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");
             String formatDateTime = now.format(formatter);
-            String archiveName = "entsog_" + formatDateTime + ".zip";
+            String archiveName = "entsog-" + formatDateTime + ".zip";
             excelFileArchiver.createArchive(archiveName);
-
-
             excelFileArchiver.addFilesToArchive("days", excelFilesDays);
-
-
-            emailService.sendEmailWithAttachment(recipientsExport, "Files from Entsog with data", "Коллеги, такой файл, по идее, будет начинать выгружаться" +
+            emailService.sendEmailWithAttachment(recipientsExport, "Данные для сводки показатели транспорта черех ПСП на границах Украины", "Коллеги, такой файл, по идее, будет выгружаться" +
                     " в 21:31  по Москве и приходить к вам на почту на ежедневной основе. Если перестанет работать, то пишите", null, excelFileArchiver.closeArchive());
-
             excelFilesDays.clear();
 
 
         } catch (InterruptedException | MessagingException | IOException e) {
+            throw new RuntimeException(e);
+        }
+
+
+
+    }
+
+    public void fetchAndProcessDataForExportTSO() {
+        System.out.println("Загрузка и обработка данных. Текущее время: " + LocalDateTime.now());
+        // Логика для загрузки и обработки данных
+        long delay = 1000;
+
+
+        try {
+
+            handleDayFilesForTSO(null, DAY_TSO_SET_4, allTypesNominations,period2);
+
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");
+            String formatDateTime = now.format(formatter);
+
+
+
+            try {
+                String archiveName = "entsog_" + formatDateTime + ".zip";
+                excelFileArchiver.createArchive(archiveName);
+                excelFileArchiver.addFilesToArchive("days", excelFilesDays);
+                emailService.sendEmailWithAttachment(recipientsExport, "Данные для сводки Динамика использования ПХГ Украины и реверсных поставок газа", "Коллеги, такой файл, по идее, будет выгружаться" +
+                        " в 21:31  по Москве и приходить к вам на почту на ежедневной основе. Если перестанет работать, то пишите", null, excelFileArchiver.closeArchive());
+                excelFilesDays.clear();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                // Обработайте ошибку
+            }
+
+
+
+
+
+
+        } catch (MessagingException | IOException e) {
             throw new RuntimeException(e);
         }
 
@@ -206,39 +248,38 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
         try {
 
-            handleDayFiles(null, DAY_POINTS_SET_2, renomination);
+            handleDayFiles(null, DAY_POINTS_SET_2, renomination,period1);
             Thread.sleep(delay);
-            handleDayFiles(null, DAY_POINTS_SET_2, allocation);
+            handleDayFiles(null, DAY_POINTS_SET_2, allocation,period1);
             Thread.sleep(delay);
-            handleDayFiles(null, DAY_POINTS_SET_1, physicalflow);
+            handleDayFiles(null, DAY_POINTS_SET_1, physicalflow,period1);
             Thread.sleep(delay);
-            handleDayFiles(null, DAY_POINTS_SET_2, physicalflow);
+            handleDayFiles(null, DAY_POINTS_SET_2, physicalflow,period1);
             Thread.sleep(delay);
-            handleDayFiles(null, DAY_POINTS_SET_1, gcv);
+            handleDayFiles(null, DAY_POINTS_SET_1, gcv,period1);
             Thread.sleep(delay);
-            handleDayFiles(null, DAY_POINTS_SET_2, gcv);
+            handleDayFiles(null, DAY_POINTS_SET_2, gcv,period1);
             Thread.sleep(delay);
-            handleDayFiles(null, DAY_POINTS_SET_2, nomination);
+            handleDayFiles(null, DAY_POINTS_SET_2, nomination,period1);
             Thread.sleep(delay);
-            handleHourFile(null, DAY_POINTS_SET_2, physicalflow);
+            handleHourFile(null, DAY_POINTS_SET_2, physicalflow,period3);
             Thread.sleep(delay);
+            handleHourFile(null, DAY_POINTS_SET_1, physicalflow,period3);
+
 
             LocalDateTime now = LocalDateTime.now();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");
             String formatDateTime = now.format(formatter);
-            String archiveName = "entsog_" + formatDateTime + ".zip";
+            String archiveName = "entsog-" + formatDateTime + ".zip";
             excelFileArchiver.createArchive(archiveName);
 
             excelFileArchiver.addFilesToArchive("hours", excelFilesHours);
             excelFileArchiver.addFilesToArchive("days", excelFilesDays);
 
 
-            emailService.sendEmailWithAttachment(recipients, "Files from Entsog with data", "Коллеги, такой файл, по идее, будет начинать выгружаться" +
-                    " в 5 часов утра по Москве и приходить к вам на почту на ежедневной основе. Если перестанет работать, то пишите", null, excelFileArchiver.closeArchive());
+            emailService.sendEmailWithAttachment(recipients, "Данные для сводок Транзит Болгария Словакия", "Коллеги, такой файл, по идее, будет выгружаться" +
+                    " в 5 30 часов утра по Москве и приходить к вам на почту на ежедневной основе. Если перестанет работать, то пишите", null, excelFileArchiver.closeArchive());
 
-
-//            emailService.sendEmailWithAttachment(recipients, "Files from Entsog with daily data", "Test", excelFilesDays);
-//            emailService.sendEmailWithAttachment(recipients, "Files from Entsog with hourly data", "Test", excelFilesHours);
 
             excelFilesHours.clear();
             excelFilesDays.clear();
@@ -279,46 +320,11 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                 sendGif(chatId);
             }
             case EXCEL -> {
-                try {
 
-                    handleDayFiles(null, DAY_POINTS_SET_2, renomination);
-                    Thread.sleep(delay);
-//                    handleDayFiles(null, DAY_POINTS_SET_2, allocation);
-//                    Thread.sleep(delay);
-//                    handleDayFiles(null, DAY_POINTS_SET_1, physicalflow);
-//                    Thread.sleep(delay);
-//                    handleDayFiles(null, DAY_POINTS_SET_2, physicalflow);
-//                    Thread.sleep(delay);
-//                    handleDayFiles(null, DAY_POINTS_SET_1, gcv);
-//                    Thread.sleep(delay);
-//                    handleDayFiles(null, DAY_POINTS_SET_2, gcv);
-//                    Thread.sleep(delay);
-//                    handleDayFiles(null, DAY_POINTS_SET_2, nomination);
-//                    Thread.sleep(delay);
-                    handleHourFile(null, DAY_POINTS_SET_2, physicalflow);
-                    Thread.sleep(delay);
-
-                    LocalDateTime now = LocalDateTime.now();
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                    String formatDateTime = now.format(formatter);
-                    String archiveName = "entsog_" + formatDateTime + ".zip";
-                    excelFileArchiver.createArchive(archiveName);
-
-                    excelFileArchiver.addFilesToArchive("hours", excelFilesHours);
-                    excelFileArchiver.addFilesToArchive("days", excelFilesDays);
+                fetchAndProcessDataForExport();
+                fetchAndProcessDataForExportTSO();
 
 
-                    emailService.sendEmailWithAttachment(recipients, "Files from Entsog with data", "Коллеги, такой файл, по идее, будет начинать выгружаться" +
-                            " в 5 часов утра по Москве и приходить к вам на почту на ежедневной основе. Если перестанет работать, то пишите", null, excelFileArchiver.closeArchive());
-
-
-                    excelFilesHours.clear();
-                    excelFilesDays.clear();
-
-
-                } catch (InterruptedException | MessagingException | IOException e) {
-                    throw new RuntimeException(e);
-                }
 
 
             }
@@ -438,15 +444,15 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
         sendMessage(chatId, formattedText);
     }
 
-    private void handleDayFiles(Long chatId, List<String> dayPointDirections, String fileType) {
+    private void handleDayFiles(Long chatId, List<String> dayPointDirections, String fileType,int[][] periodProcessing) {
         try {
 
-            String[] fileTypes = {"Physical%20Flow", "Renomination", "GCV", "Nomination"};
-
-            int[][] periods = {{11, -8}, {7, -4}, {3, 1}};
 
 
-            for (int[] period : periods) {
+
+
+
+            for (int[] period : periodProcessing) {
                 ExcelFile file = exchangeRatesService.getExcelFile("day", dayPointDirections, period[0], period[1], fileType);
 
                 excelFilesDays.add(file);
@@ -462,14 +468,28 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
         }
     }
 
-    private void handleHourFile(Long chatId, List<String> hourPointDirections, String fileType) {
+    private void handleDayFilesForTSO(Long chatId, List<String> dayPointDirections, String fileType,int[][] periodProcessing) {
         try {
-            // Файл для часов\
-            // String[] fileTypes = { "Physical%20Flow"};
-            int[][] periods = {{2, -2}, {1, -1}, {0, 0}, {-1, 1}};
 
-            //for (String fileType : fileTypes) {
-            for (int[] period : periods) {
+            for (int[] period : periodProcessing) {
+                ExcelFile file = exchangeRatesService.getExcelFileForTSO("day", dayPointDirections, period[0], period[1], fileType);
+
+                excelFilesDays.add(file);
+
+            }
+
+        } catch (ServiceException e) {
+            LOG.error("Ошибка при отправке файла Excel", e);
+        }
+    }
+
+    private void handleHourFile(Long chatId, List<String> hourPointDirections, String fileType,int[][] periodProcessing) {
+        try {
+
+
+
+
+            for (int[] period : periodProcessing) {
                 ExcelFile file = exchangeRatesService.getExcelFile("hour", hourPointDirections, period[0], period[1], fileType);
                 excelFilesHours.add(file);
             }

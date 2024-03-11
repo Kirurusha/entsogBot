@@ -64,6 +64,8 @@ public class ExchangeRatesServiceImpl implements ExchangeRatesService {
         String formattedEndDate = endDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
         String baseUrl = "https://transparency.entsog.eu/api/v1/operationalData.xlsx";
+
+
         String pointDirectionsParam = String.join(",", pointDirections);
 
         String queryParams = String.format(
@@ -112,6 +114,71 @@ public class ExchangeRatesServiceImpl implements ExchangeRatesService {
         }
         return null;
 
+    }
+
+    @Override
+    public ExcelFile getExcelFileForTSO(String periodType, List<String> pointDirections, int daysBefore, int daysAfter, String reqType) throws SecurityException, ServiceException {
+
+        LocalDate currentDate = LocalDate.now();
+        LocalDate startDate = currentDate.minusDays(daysBefore);
+        LocalDate endDate = currentDate.plusDays(daysAfter);
+
+        String formattedStartDate = startDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        String formattedEndDate = endDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+        String baseUrl = "https://transparency.entsog.eu/api/v1/operationalData.xlsx";
+
+
+        String pointDirectionsParam = String.join(",", pointDirections);
+
+        //https://transparency.entsog.eu/api/v1/operationalData.xlsx
+        // from=2024-03-04&to=2024-03-10&indicator=Nomination,Renomination,Allocation,Physical%20Flow,GCV&periodType=day&timezone=CET&periodize=0&limit=-1&isTransportData=true&dataset=1&operatorLabel=eustream,GAZ-SYSTEM,FGSZ,Transgaz,Gas TSO UA
+
+        String queryParams = String.format(
+                "?forceDownload=true&from=%s&to=%s&indicator=%s&periodType=%s&timezone=CET&periodize=0&limit=-1&isTransportData=true&dataset=1&operatorLabel=%s",
+                formattedStartDate, formattedEndDate,reqType, periodType, URLEncoder.encode(pointDirectionsParam, StandardCharsets.UTF_8)
+        );
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String formatDateTime = now.format(formatter);
+
+        String fullUrl = baseUrl + queryParams;
+        System.out.println(fullUrl +" " + formatDateTime  );
+
+
+        int maxAttempts = 60;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+                HttpClient client = HttpClient.newHttpClient();
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(fullUrl))
+                        .GET()
+                        .build();
+
+                HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+
+                if (response.statusCode() == 200) {
+                    InputStream inputStream = response.body();
+                    Optional<String> contentDisposition = response.headers().firstValue("Content-Disposition");
+                    String filename = contentDisposition.map(cd -> cd.split("filename=")[1].replaceAll("\"", "")).orElse("default_filename.xlsx");
+                    return new ExcelFile(inputStream, filename);
+                } else if (response.statusCode() >= 500) {
+                    if (attempt < maxAttempts) {
+                        System.out.println("Получена ошибка 500, попытка номер " + attempt);
+                        Thread.sleep(1000); // Задержка в 1 секунду перед следующей попыткой
+                        continue;
+                    } else {
+                        throw new ServiceException("Ошибка при получении файла Excel: HTTP статус " + response.statusCode(), new IOException());
+                    }
+                } else {
+                    throw new ServiceException("Ошибка при получении файла Excel: HTTP статус " + response.statusCode(), new IOException());
+                }
+            } catch (IOException | InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new ServiceException("Ошибка при скачивании файла Excel", e);
+            }
+        }
+        return null;
     }
 
 

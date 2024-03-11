@@ -3,7 +3,14 @@ package ru.filatov.exchange_rates_bot.service;
 import org.springframework.stereotype.Service;
 import ru.filatov.exchange_rates_bot.entity.ExcelFile;
 
-import java.io.*;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.zip.*;
 
@@ -16,7 +23,13 @@ public class ExcelFileArchiver {
     // Инициализация ZipOutputStream перенесена в отдельный метод
     public void createArchive(String archiveName) throws IOException {
         this.archivePath = archiveName;
+
+        CharsetEncoder encoder = StandardCharsets.UTF_8.newEncoder();
         FileOutputStream fos = new FileOutputStream(archivePath);
+        OutputStreamWriter osw = new OutputStreamWriter(fos, encoder);
+
+
+
         this.zos = new ZipOutputStream(fos);  // Инициализация zos
     }
 
