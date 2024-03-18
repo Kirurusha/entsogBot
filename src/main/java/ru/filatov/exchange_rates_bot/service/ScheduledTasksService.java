@@ -14,7 +14,7 @@ public class ScheduledTasksService {
 
     // Внедряем зависимость через конструктор
 
-    @Scheduled(cron = "0 35 5 * * *", zone = "Europe/Moscow")
+    @Scheduled(cron = "0 35 4 * * *", zone = "Europe/Moscow")
     public void performTask() {
         exchangeRatesBot.fetchAndProcessData();
     }
