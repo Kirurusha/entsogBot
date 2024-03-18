@@ -323,13 +323,16 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                 sendGif(chatId);
             }
             case CHECK -> {
+
                 unknownCommand(chatId);
             }
             case KZD -> {
+                sendMessage(chatId, "Началась загрузка файлов для КЗД");
                 fetchAndProcessDataForExport();
                 fetchAndProcessDataForExportTSO();
             }
             case OST -> {
+                sendMessage(chatId, "Началась загрузка файлов для пл.Островского");
                 fetchAndProcessData();
             }
             case EXCEL -> {
@@ -391,7 +394,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
         var text = """
                 Добро пожаловать в бот, %s!
                                 
-                Здесь вы сможете узнать официальные курсы валют на сегодняб установаленные ЦБ РФ!
+                Здесь вы сможете скачать данные Entsog!
                                 
                 Для этого воспользуйтесь командами:
 
@@ -484,6 +487,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
     }
 
     private void handleDayFilesForTSO(Long chatId, List<String> dayPointDirections, String fileType,int[][] periodProcessing) {
+
         try {
 
             for (int[] period : periodProcessing) {
