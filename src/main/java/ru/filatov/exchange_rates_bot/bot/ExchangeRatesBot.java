@@ -42,6 +42,9 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
     private static final String HELP = "/help";
     private static final String LOVE = "/love";
     private static final String EXCEL = "/excel";
+    private static final String CHECK = "/check";
+    private static final String KZD = "/fileForKZD";
+    private static final String OST = "/fileForOstrovskogo";
 
     private static final String physicalflow = "Physical%20Flow";
     private static final String renomination = "Renomination";
@@ -306,8 +309,8 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                 startCommand(chatId, userName);
             }
             case USD -> {
-                this.fetchAndProcessData();
-                // usdCommand(chatId);
+                // this.fetchAndProcessData();
+                usdCommand(chatId);
 
             }
             case EUR -> {
@@ -319,11 +322,17 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
             case LOVE -> {
                 sendGif(chatId);
             }
-            case EXCEL -> {
-
+            case CHECK -> {
+                unknownCommand(chatId);
+            }
+            case KZD -> {
                 fetchAndProcessDataForExport();
                 fetchAndProcessDataForExportTSO();
-
+            }
+            case OST -> {
+                fetchAndProcessData();
+            }
+            case EXCEL -> {
 
 
 
@@ -385,10 +394,16 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                 Здесь вы сможете узнать официальные курсы валют на сегодняб установаленные ЦБ РФ!
                                 
                 Для этого воспользуйтесь командами:
-                /usd - курс доллара
-                /eur - курс евро
-                /love - кнопка для Анастасии
-                /excel - отправить файл
+
+                
+                /check - проверка работы бота, если отвечает, то ОК
+                
+                             
+                /fileForKZD - скачать файлы для диспетчеров в КЗС
+                
+                
+                /fileForOstrovskogo - островского
+               
                                 
                  
                 Дополнительные команды:
