@@ -20,8 +20,10 @@ public class ScheduledTasksService {
     }
 
 
-    @Scheduled(cron = "0 32 21 * * *", zone = "Europe/Moscow")
+    @Scheduled(cron = "0 40 21 * * *", zone = "Europe/Moscow")
     public void performTaskExport() {
+        
+
         exchangeRatesBot.fetchAndProcessDataForExport();
         exchangeRatesBot.fetchAndProcessDataForExportTSO();
 

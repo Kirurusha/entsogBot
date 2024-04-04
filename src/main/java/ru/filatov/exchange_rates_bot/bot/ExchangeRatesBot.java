@@ -53,6 +53,8 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
     private static final String gcv = "GCV";
     private static final String allTypesNominations = "Nomination,Renomination,Allocation,Physical%20Flow,GCV";
 
+    private static final long myChatId = 598389393;
+
 
 
     //Nomination,Renomination,Allocation,Physical%20Flow,GCV&periodType=day&timezone=CET&periodize=0&limit=-1&isTransportData=true&dataset=1&operatorLabel=eustream,GAZ-SYSTEM,FGSZ,Transgaz,Gas TSO UA
@@ -140,7 +142,6 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
 
 
-    // https://transparency.entsog.eu/api/v1/operationalData.xlsx?forceDownload=true&from=2024-03-04&to=2024-03-10&indicator=Nomination,Renomination,Allocation,Physical%20Flow,GCV&periodType=day&timezone=CET&periodize=0&limit=-1&isTransportData=true&dataset=1&operatorLabel=eustream,GAZ-SYSTEM,FGSZ,Transgaz,Gas TSO UA
 
 
     private static final List<ExcelFile> excelFilesDays = new ArrayList<>();
@@ -281,7 +282,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
 
             emailService.sendEmailWithAttachment(recipients, "Данные для сводок Транзит Болгария Словакия", "Коллеги, такой файл, по идее, будет выгружаться" +
-                    " в 5 30 часов утра по Москве и приходить к вам на почту на ежедневной основе. Если перестанет работать, то пишите", null, excelFileArchiver.closeArchive());
+                    " в 4 35 часов утра по Москве и приходить к вам на почту на ежедневной основе. Если перестанет работать, то пишите", null, excelFileArchiver.closeArchive());
 
 
             excelFilesHours.clear();
@@ -418,7 +419,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
     }
 
 
-    private void sendMessage(Long chatId, String text) {
+    public void sendMessage(Long chatId, String text) {
         var chatIdStr = String.valueOf(chatId);
         var sendMessage = new SendMessage(chatIdStr, text);
         try {
