@@ -57,26 +57,18 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
 
 
-    //Nomination,Renomination,Allocation,Physical%20Flow,GCV&periodType=day&timezone=CET&periodize=0&limit=-1&isTransportData=true&dataset=1&operatorLabel=eustream,GAZ-SYSTEM,FGSZ,Transgaz,Gas TSO UA
+
     private static final int[][] period1 = {{11, -8}, {7, -4}, {3, 1}};
     private static final int[][] period2 = {{6, -1}};
     private static final int[][] period3= {{2, 1}};
 
     private static final List<String> DAY_POINTS_SET_1 = Arrays.asList(
-
-
-
             "ua-tso-0001itp-00117exit",
             "at-tso-0001itp-00162entry",
             "at-tso-0001itp-00062entry",
             "at-tso-0003itp-00037entry"
-
-
     );
     private static final List<String> DAY_POINTS_SET_2 = Arrays.asList(
-
-
-
             "bg-tso-0001itp-00041entry",
             "bg-tso-0001itp-00549entry",
             "bg-tso-0001itp-00529exit",
@@ -91,11 +83,8 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
             "de-tso-0001itp-00096exit",
             "hu-tso-0001itp-10013entry",
             "bg-tso-0001itp-00058exit"
-
-
     );
     private static final List<String> DAY_POINTS_SET_3 = Arrays.asList(
-
             "ua-tso-0001itp-10008exit",
             "pl-tso-0002itp-10008entry",
             "ua-tso-0001itp-10008entry",
@@ -124,14 +113,9 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
             "ua-tso-0001itp-00087entry",
             "ua-tso-0001itp-00444exit",
             "ua-tso-0001itp-00444entry"
-
-
     );
 
     private static final List<String> DAY_TSO_SET_4 = Arrays.asList(
-
-
-
             "eustream",
             "GAZ-SYSTEM",
             "FGSZ",
@@ -141,16 +125,13 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
     );
 
 
-
-
-
     private static final List<ExcelFile> excelFilesDays = new ArrayList<>();
     private static final List<ExcelFile> excelFilesHours = new ArrayList<>();
     private static List<String> recipients = Arrays.asList("kirillfilatoww@mail.ru", "operatorsouth@gazpromexport.gazprom.ru"
            , "operator@gazpromexport.gazprom.ru");
     private static List<String> recipientsExport = Arrays.asList("kirillfilatoww@mail.ru", "cpdd-export@adm.gazprom.ru");
     //private static final List<String> recipients = List.of("kirillfilatoww@mail.ru");
-    String gifUrl = "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExODFxM2E4b3l2djZoNDd0bXRldGkwOXh4cjFjY3djbzEyd3B6MmFpMSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/5kpRuktAKcNXy4p1is/giphy.gif";
+
     @Autowired
     private ExcelFileArchiver excelFileArchiver;
     @Autowired
@@ -167,8 +148,6 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
         System.out.println("Загрузка и обработка данных. Текущее время: " + LocalDateTime.now());
         // Логика для загрузки и обработки данных
         long delay = 1000;
-
-
         try {
 
             handleDayFiles(null, DAY_POINTS_SET_3, renomination,period1);
@@ -182,7 +161,6 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
             handleDayFiles(null, DAY_POINTS_SET_3, nomination,period1);
             Thread.sleep(delay);
 
-
             LocalDateTime now = LocalDateTime.now();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");
             String formatDateTime = now.format(formatter);
@@ -192,14 +170,9 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
             emailService.sendEmailWithAttachment(recipientsExport, "Данные для сводки показатели транспорта черех ПСП на границах Украины", "Коллеги, такой файл, по идее, будет выгружаться" +
                     " в 21:31  по Москве и приходить к вам на почту на ежедневной основе. Если перестанет работать, то пишите", null, excelFileArchiver.closeArchive());
             excelFilesDays.clear();
-
-
         } catch (InterruptedException | MessagingException | IOException e) {
             throw new RuntimeException(e);
         }
-
-
-
     }
 
     public void fetchAndProcessDataForExportTSO() {
@@ -305,26 +278,13 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
         var chatId = update.getMessage().getChatId();
         switch (message) {
             case START -> {
-
                 String userName = update.getMessage().getChat().getUserName();
                 startCommand(chatId, userName);
-            }
-            case USD -> {
-                // this.fetchAndProcessData();
-                usdCommand(chatId);
-
-            }
-            case EUR -> {
-                eurCommand(chatId);
             }
             case HELP -> {
                 helpCommand(chatId);
             }
-            case LOVE -> {
-                sendGif(chatId);
-            }
             case CHECK -> {
-
                 unknownCommand(chatId);
             }
             case KZD -> {
@@ -336,55 +296,9 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                 sendMessage(chatId, "Началась загрузка файлов для пл.Островского");
                 fetchAndProcessData();
             }
-            case EXCEL -> {
-
-
-
-            }
             default -> unknownCommand(chatId);
-
-        }
-
-
-    }
-
-    private void sendApiButton(Long chatId) {
-        InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
-        List<InlineKeyboardButton> rowInline = new ArrayList<>();
-        InlineKeyboardButton button = new InlineKeyboardButton();
-        button.setText("Получить Excel");
-        button.setCallbackData("get_excel");
-        rowInline.add(button);
-        markupInline.setKeyboard(rowsInline);
-
-        var sendMessage = new SendMessage();
-        sendMessage.setChatId(String.valueOf(chatId));
-        sendMessage.setText("Нажмите кнопку ниже, чтобы получить файл Excel:");
-        sendMessage.setReplyMarkup(markupInline);
-        try {
-            execute(sendMessage);
-        } catch (TelegramApiException e) {
-            LOG.error("Ошибка при отправке сообщения с кнопкой", e);
-        }
-
-    }
-
-    private void sendExcelFile(Long chatId, ExcelFile excelFileStream) {
-        // Логика для вызова API и получения файла Excel
-        // Предположим, что у вас есть метод в сервисе, который возвращает InputStream файла
-        try {
-
-            String fileName = "rates.xlsx";
-            SendDocument sendDocumentRequest = new SendDocument();
-            sendDocumentRequest.setChatId(String.valueOf(chatId));
-            sendDocumentRequest.setDocument(new InputFile(excelFileStream.getInputStream(), excelFileStream.getFilename()));
-            execute(sendDocumentRequest);
-        } catch (TelegramApiException e) {
-            LOG.error("Ошибка при отправке файла Excel", e);
         }
     }
-
 
     @Override
     public String getBotUsername() {
@@ -408,7 +322,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                 
                 /fileForOstrovskogo - островского
                
-                                
+    
                  
                 Дополнительные команды:
                 /help - получение справки
@@ -430,74 +344,42 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
     }
 
-    private void usdCommand(Long chatId) {
-        String formattedText;
-        try {
-            var usd = exchangeRatesService.getUSDExchangeRate();
-            var text = "Курс доллара на %s составляет %s рублей";
-            emailService.sendEmailWithAttachment(recipients, "Test", "Test", null, "");
-            formattedText = String.format(text, LocalDate.now(), usd);
-        } catch (ServiceException e) {
-            LOG.error("Ошибка при получении доллара", e);
-            formattedText = "Не удалось получить текущий курс доллара. Попробуйте позже";
-
-        } catch (MessagingException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        sendMessage(chatId, formattedText);
-    }
-
-    private void eurCommand(Long chatId) {
-        String formattedText;
-        try {
-            var eur = exchangeRatesService.getEURExchangeRate();
-            var text = "Курс евро на %s составляет %s рублей";
-            formattedText = String.format(text, LocalDate.now(), eur);
-        } catch (ServiceException e) {
-            LOG.error("Ошибка при получении доллара", e);
-            formattedText = "Не удалось получить текущий курс доллара. Попробуйте позже";
-
-        }
-        sendMessage(chatId, formattedText);
-    }
+//    private void usdCommand(Long chatId) {
+//        String formattedText;
+//        try {
+//            var usd = exchangeRatesService.getUSDExchangeRate();
+//            var text = "Курс доллара на %s составляет %s рублей";
+//            emailService.sendEmailWithAttachment(recipients, "Test", "Test", null, "");
+//            formattedText = String.format(text, LocalDate.now(), usd);
+//        } catch (ServiceException e) {
+//            LOG.error("Ошибка при получении доллара", e);
+//            formattedText = "Не удалось получить текущий курс доллара. Попробуйте позже";
+//
+//        } catch (MessagingException e) {
+//            throw new RuntimeException(e);
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//        sendMessage(chatId, formattedText);
+//    }
 
     private void handleDayFiles(Long chatId, List<String> dayPointDirections, String fileType,int[][] periodProcessing) {
         try {
-
-
-
-
-
-
             for (int[] period : periodProcessing) {
                 ExcelFile file = exchangeRatesService.getExcelFile("day", dayPointDirections, period[0], period[1], fileType);
-
                 excelFilesDays.add(file);
-
             }
-
-
-            // sendExcelFile(chatId, dayFile1);
-
-
         } catch (ServiceException e) {
             LOG.error("Ошибка при отправке файла Excel", e);
         }
     }
 
     private void handleDayFilesForTSO(Long chatId, List<String> dayPointDirections, String fileType,int[][] periodProcessing) {
-
         try {
-
             for (int[] period : periodProcessing) {
                 ExcelFile file = exchangeRatesService.getExcelFileForTSO("day", dayPointDirections, period[0], period[1], fileType);
-
                 excelFilesDays.add(file);
-
             }
-
         } catch (ServiceException e) {
             LOG.error("Ошибка при отправке файла Excel", e);
         }
@@ -505,16 +387,10 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
     private void handleHourFile(Long chatId, List<String> hourPointDirections, String fileType,int[][] periodProcessing) {
         try {
-
-
-
-
             for (int[] period : periodProcessing) {
                 ExcelFile file = exchangeRatesService.getExcelFile("hour", hourPointDirections, period[0], period[1], fileType);
                 excelFilesHours.add(file);
             }
-
-
         } catch (ServiceException e) {
             LOG.error("Ошибка при отправке файла Excel", e);
         }
@@ -526,29 +402,20 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                 Справочная информация по боту
                                 
                 Для получения текущих курсов валют воспользуйтесь командами:
-                /usd
-                /eur
-                /love
-                                
+                /check
+                /fileForKZD
+                /fileForOstrovskogo
+          
                 """;
         sendMessage(chatId, text);
 
     }
 
     private void unknownCommand(Long chatId) {
-        var text = "Неизвестная команда";
+        var text = "Бот работает!";
         sendMessage(chatId, text);
     }
 
 
-    public void sendGif(Long chatId) {
-        SendAnimation sendAnimation = new SendAnimation();
-        sendAnimation.setChatId(String.valueOf(chatId));
-        sendAnimation.setAnimation(new InputFile(gifUrl)); // URL GIF файла
-        try {
-            execute(sendAnimation);
-        } catch (TelegramApiException e) {
-            LOG.error("Ошибка при отправке GIF", e);
-        }
-    }
+
 }
