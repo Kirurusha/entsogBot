@@ -292,7 +292,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
             excelFileArchiver.addFilesToArchive("AGSI", excelFilesAGSI);
 
-            emailService.sendEmailWithAttachment(recipientsTest, "Данные для сводки Динамика использования ПХГ Украины и реверсных поставок газа", "Коллеги, такой файл, по идее, будет выгружаться" +
+            emailService.sendEmailWithAttachment(recipients, "Данные для сводки Динамика использования ПХГ Украины и реверсных поставок газа", "Коллеги, такой файл, по идее, будет выгружаться" +
                     " в 21:41  по Москве и приходить к вам на почту на ежедневной основе. Если перестанет работать, то пишите", null, excelFileArchiver.closeArchive());
             excelFilesAGSI.clear();
 
