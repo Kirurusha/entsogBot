@@ -24,6 +24,7 @@ public class ScheduledTasksService {
     public void performTaskExport() {
         exchangeRatesBot.fetchAndProcessDataForExport();
         exchangeRatesBot.fetchAndProcessDataForExportTSO();
+        exchangeRatesBot.fetchAndProcessDataAGSI();
     }
 
 }

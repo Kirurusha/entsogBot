@@ -1,5 +1,6 @@
 package ru.filatov.exchange_rates_bot.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +27,13 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.util.Map;
 
 @Service
 public class ExchangeRatesServiceImpl implements ExchangeRatesService {
@@ -157,6 +165,9 @@ public class ExchangeRatesServiceImpl implements ExchangeRatesService {
 
                 HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
 
+
+
+
                 if (response.statusCode() == 200) {
                     InputStream inputStream = response.body();
                     Optional<String> contentDisposition = response.headers().firstValue("Content-Disposition");
@@ -180,6 +191,138 @@ public class ExchangeRatesServiceImpl implements ExchangeRatesService {
         }
         return null;
     }
+
+
+    private ExcelFile convertJsonToExcel(List<Map<String, Object>> dataList) throws IOException {
+
+
+        LocalDateTime currentDate = LocalDateTime.now();
+
+
+
+        String formattedcurrentDate = currentDate.format(DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss"));
+        String filename = "AGSI_data_for_" + formattedcurrentDate + ".xlsx";
+
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Data");
+
+            // Create the header row
+            Row headerRow = sheet.createRow(0);
+            if (!dataList.isEmpty()) {
+                int headerCellNum = 0;
+                for (String key : dataList.get(0).keySet()) {
+                    headerRow.createCell(headerCellNum++).setCellValue(key);
+                }
+            }
+
+            // Populate the data rows
+            int rowNum = 1;
+            for (Map<String, Object> dataMap : dataList) {
+                Row row = sheet.createRow(rowNum++);
+                int cellNum = 0;
+                for (String key : dataList.get(0).keySet()) {
+                    Cell cell = row.createCell(cellNum++);
+                    Object value = dataMap.get(key);
+                    if (value instanceof String) {
+                        cell.setCellValue((String) value);
+                    } else if (value instanceof Number) {
+                        cell.setCellValue(((Number) value).doubleValue());
+                    } else if (value != null) {
+                        cell.setCellValue(value.toString());
+                    } else {
+                        cell.setCellValue("");
+                    }
+                }
+            }
+
+            // Write the workbook to a byte array
+            try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+                workbook.write(bos);
+                ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+                return new ExcelFile(bis, filename);
+            }
+        }
+    }
+
+
+
+
+    @Override
+    public ExcelFile getExcelFileAGSI() throws SecurityException, ServiceException {
+
+
+
+
+
+        //String baseUrl = "https://transparency.entsog.eu/api/v1/operationalData.xlsx";
+        //String baseUrl = "https://agsi.gie.eu/api?country=UA&days=10%22%20--header%20%22x-key:%209435cddc54496f4f11a24e129925b36d%22";
+        String baseUrl = "https://agsi.gie.eu/api?country=UA&days=10%22%20--header%20%22x-key:%209435cddc54496f4f11a24e129925b36d%22";
+
+
+        //String pointDirectionsParam = String.join(",", pointDirections);
+
+        //https://transparency.entsog.eu/api/v1/operationalData.xlsx
+        // from=2024-03-04&to=2024-03-10&indicator=Nomination,Renomination,Allocation,Physical%20Flow,GCV&periodType=day&timezone=CET&periodize=0&limit=-1&isTransportData=true&dataset=1&operatorLabel=eustream,GAZ-SYSTEM,FGSZ,Transgaz,Gas TSO UA
+
+
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String formatDateTime = now.format(formatter);
+
+        String fullUrl = baseUrl ;
+        System.out.println(fullUrl +" " + formatDateTime  );
+
+
+        int maxAttempts = 60;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+                HttpClient client = HttpClient.newHttpClient();
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(fullUrl))
+                        .GET()
+                        .build();
+
+                // Ваш код для получения JSON...
+                HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+
+
+                if (response.statusCode() == 200) {
+
+
+
+                    String json = new String(response.body().readAllBytes(), StandardCharsets.UTF_8);
+                    ObjectMapper mapper = new ObjectMapper();
+                    JsonNode rootNode = mapper.readTree(json);
+                    JsonNode dataNode = rootNode.path("data");
+                    List<Map<String, Object>> dataList = mapper.convertValue(dataNode, new TypeReference<List<Map<String, Object>>>() {});
+                    ExcelFile excelFile = convertJsonToExcel(dataList);
+
+
+                    //InputStream inputStream = response.body();
+                    //Optional<String> contentDisposition = response.headers().firstValue("Content-Disposition");
+                    //String filename = contentDisposition.map(cd -> cd.split("filename=")[1].replaceAll("\"", "")).orElse("default_filename.xlsx");
+                    return excelFile;
+
+                } else if (response.statusCode() >= 500) {
+                    if (attempt < maxAttempts) {
+                        System.out.println("Получена ошибка 500, попытка номер " + attempt);
+                        Thread.sleep(1000); // Задержка в 1 секунду перед следующей попыткой
+                        continue;
+                    } else {
+                        throw new ServiceException("Ошибка при получении файла Excel: HTTP статус " + response.statusCode(), new IOException());
+                    }
+                } else {
+                    throw new ServiceException("Ошибка при получении файла Excel: HTTP статус " + response.statusCode(), new IOException());
+                }
+            } catch (IOException | InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new ServiceException("Ошибка при скачивании файла Excel", e);
+            }
+        }
+        return null;
+    }
+
+
 
 
     private static String exctractCurrencyValueFromXML(String xml, String xpathExpression) throws ServiceException {

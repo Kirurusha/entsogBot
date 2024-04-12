@@ -21,6 +21,12 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
 	implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.11.0'
+	// Jackson для работы с JSON
+	implementation 'com.fasterxml.jackson.core:jackson-databind:2.10.3'
+
+// Apache POI для создания Excel файлов
+	implementation 'org.apache.poi:poi-ooxml:4.1.2'
+
 
 	implementation 'com.sun.mail:javax.mail:1.6.2'
 

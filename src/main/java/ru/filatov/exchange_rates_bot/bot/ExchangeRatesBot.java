@@ -45,12 +45,14 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
     private static final String CHECK = "/check";
     private static final String KZD = "/fileForKZD";
     private static final String OST = "/fileForOstrovskogo";
+    private static final String AGSI = "/agsi";
 
     private static final String physicalflow = "Physical%20Flow";
     private static final String renomination = "Renomination";
     private static final String nomination = "Nomination";
     private static final String allocation = "Allocation";
     private static final String gcv = "GCV";
+
     private static final String allTypesNominations = "Nomination,Renomination,Allocation,Physical%20Flow,GCV";
 
     private static final long myChatId = 598389393;
@@ -127,9 +129,12 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
     private static final List<ExcelFile> excelFilesDays = new ArrayList<>();
     private static final List<ExcelFile> excelFilesHours = new ArrayList<>();
+    private static final List<ExcelFile> excelFilesAGSI = new ArrayList<>();
     private static List<String> recipients = Arrays.asList("kirillfilatoww@mail.ru", "operatorsouth@gazpromexport.gazprom.ru"
            , "operator@gazpromexport.gazprom.ru");
     private static List<String> recipientsExport = Arrays.asList("kirillfilatoww@mail.ru", "cpdd-export@adm.gazprom.ru");
+    //private static final List<String> recipients = List.of("kirillfilatoww@mail.ru");
+    private static List<String> recipientsTest = Arrays.asList("kirillfilatoww@mail.ru");
     //private static final List<String> recipients = List.of("kirillfilatoww@mail.ru");
 
     @Autowired
@@ -268,6 +273,41 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
     }
 
+    public void fetchAndProcessDataAGSI() {
+        System.out.println("Загрузка и обработка данных. Текущее время: " + LocalDateTime.now());
+        // Логика для загрузки и обработки данных
+        long delay = 1000;
+
+
+        try {
+            handleAGSI();
+
+
+
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");
+            String formatDateTime = now.format(formatter);
+            String archiveName = "AGSI-" + formatDateTime + ".zip";
+            excelFileArchiver.createArchive(archiveName);
+
+            excelFileArchiver.addFilesToArchive("AGSI", excelFilesAGSI);
+
+            emailService.sendEmailWithAttachment(recipientsTest, "Данные для сводки Динамика использования ПХГ Украины и реверсных поставок газа", "Коллеги, такой файл, по идее, будет выгружаться" +
+                    " в 21:41  по Москве и приходить к вам на почту на ежедневной основе. Если перестанет работать, то пишите", null, excelFileArchiver.closeArchive());
+            excelFilesAGSI.clear();
+
+
+
+
+
+
+        } catch (MessagingException | IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+
     @Override
     public void onUpdateReceived(Update update) {
         long delay = 5000;
@@ -296,6 +336,10 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                 sendMessage(chatId, "Началась загрузка файлов для пл.Островского");
                 fetchAndProcessData();
             }
+            case AGSI -> {
+                fetchAndProcessDataAGSI();
+            }
+
             default -> unknownCommand(chatId);
         }
     }
@@ -315,6 +359,8 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
                 
                 /check - проверка работы бота, если отвечает, то ОК
+                
+                /agsi 
                 
                              
                 /fileForKZD - скачать файлы для диспетчеров в КЗС
@@ -391,6 +437,18 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                 ExcelFile file = exchangeRatesService.getExcelFile("hour", hourPointDirections, period[0], period[1], fileType);
                 excelFilesHours.add(file);
             }
+        } catch (ServiceException e) {
+            LOG.error("Ошибка при отправке файла Excel", e);
+        }
+    }
+
+    private void handleAGSI() {
+        try {
+
+            ExcelFile file = exchangeRatesService.getExcelFileAGSI();
+                excelFilesAGSI.add(file);
+
+
         } catch (ServiceException e) {
             LOG.error("Ошибка при отправке файла Excel", e);
         }
