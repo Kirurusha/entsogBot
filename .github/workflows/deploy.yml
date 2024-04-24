@@ -27,4 +27,5 @@ jobs:
             sleep 5
             cd /root/entsogBot/build/libs
             nohup java -jar exchange_rates_bot-0.0.1-SNAPSHOT.jar &
+            sleep 1
             echo "Bot restarted successfully!"
