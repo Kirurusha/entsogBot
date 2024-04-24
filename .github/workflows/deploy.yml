@@ -22,7 +22,7 @@ jobs:
             git pull
             ./gradlew build --exclude-task test
             echo "Stopping the old bot..."
-            java -jar /root/entsogBot/build/libs/exchange_rates_bot-0.0.1-SNAPSHOT.jar & disown
+            nohup java -jar /root/entsogBot/build/libs/exchange_rates_bot-0.0.1-SNAPSHOT.jar &> /dev/null &
 
             echo "Starting the new bot..."
             sleep 5
