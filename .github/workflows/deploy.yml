@@ -10,7 +10,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
+        with:
+          ref: v2.4.0  # Указание конкретной версии действия
       - name: Setup SSH and deploy
         uses: appleboy/ssh-action@master
         with:
@@ -20,7 +21,7 @@ jobs:
           script: |
             cd /root/entsogBot
             git pull
-            ./gradlew noTestBuild
+            ./gradlew build --exclude-task test
             echo "Stopping the old bot..."
             pkill -f 'java -jar exchange_rates_bot-0.0.1-SNAPSHOT.jar'
             echo "Starting the new bot..."
