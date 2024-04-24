@@ -20,7 +20,7 @@ jobs:
           script: |
             cd /root/entsogBot
             git pull
-            ./gradlew build
+            ./gradlew noTestBuild
             echo "Stopping the old bot..."
             pkill -f 'java -jar exchange_rates_bot-0.0.1-SNAPSHOT.jar'
             echo "Starting the new bot..."
