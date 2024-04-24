@@ -257,6 +257,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
             excelFileArchiver.addFilesToArchive("hours", excelFilesHours);
             excelFileArchiver.addFilesToArchive("days", excelFilesDays);
+            excelFileArchiver.addFilesToArchive("nominations", null);
 
 
             emailService.sendEmailWithAttachment(recipients, "Данные для сводок Транзит Болгария Словакия", "Коллеги, такой файл, по идее, будет выгружаться" +

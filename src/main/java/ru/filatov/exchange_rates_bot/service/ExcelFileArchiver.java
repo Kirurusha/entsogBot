@@ -27,10 +27,10 @@ public class ExcelFileArchiver {
         CharsetEncoder encoder = StandardCharsets.UTF_8.newEncoder();
         FileOutputStream fos = new FileOutputStream(archivePath);
         OutputStreamWriter osw = new OutputStreamWriter(fos, encoder);
-
-
-
         this.zos = new ZipOutputStream(fos);  // Инициализация zos
+        ZipEntry folderEntry = new ZipEntry("entsog_2/");
+        zos.putNextEntry(folderEntry);
+        zos.closeEntry();
     }
 
     public void addFilesToArchive(String folderName, List<ExcelFile> files) throws IOException {
@@ -38,8 +38,15 @@ public class ExcelFileArchiver {
             throw new IllegalStateException("Archive is not initialized. Call createArchive first.");
         }
 
+        if (files == null || files.isEmpty()) {
+            ZipEntry folderEntry = new ZipEntry("entsog_2/" + folderName + "/");
+            zos.putNextEntry(folderEntry);
+            zos.closeEntry();
+            return; // Завершаем выполнение метода после создания папки
+        }
+
         for (ExcelFile file : files) {
-            ZipEntry zipEntry = new ZipEntry(folderName + "/" + file.getFilename());
+            ZipEntry zipEntry = new ZipEntry("entsog_2/" + folderName + "/" + file.getFilename());
             zos.putNextEntry(zipEntry);
             try (InputStream in = file.getInputStream()) {
                 byte[] buffer = new byte[1024];
