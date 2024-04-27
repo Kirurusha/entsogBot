@@ -23,7 +23,7 @@ jobs:
             ./gradlew build --exclude-task test
             echo "Stopping the old bot..."
             # Останавливаем старый процесс бота
-            pkill -f 'java -jar /root/entsogBot/build/libs/exchange_rates_bot-0.0.1-SNAPSHOT.jar'
+            pkill -f 'java -jar /***/entsogBot/build/libs/exchange_rates_bot-0.0.1-SNAPSHOT.jar' || true
             # Даем время для полной остановки
             sleep 10
             
