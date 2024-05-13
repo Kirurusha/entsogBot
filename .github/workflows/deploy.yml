@@ -24,20 +24,28 @@ jobs:
             sleep 10
             echo "Stopping the old bot..."
             if pgrep -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar' > /dev/null; then
-              pkill -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar'
-              sleep 5
-              if pgrep -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar' > /dev/null; then
-                pkill -9 -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar'
-                sleep 5
-              fi
-            fi
+            pkill -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar' || true
+            sleep 5
             if ! pgrep -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar' > /dev/null; then
-              echo "Bot stopped successfully."
-              exit 0
+            echo "Bot stopped successfully."
+            exit 0
             else
-              echo "Failed to stop the bot after force attempt."
-              exit 1
+            echo "Failed to stop the bot after force attempt."
+            pkill -9 -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar'
+            sleep 5
+            if ! pgrep -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar' > /dev/null; then
+            echo "Forcefully stopped the bot."
+            exit 0
+            else
+            echo "Failed to stop the bot after all attempts."
+            exit 1
             fi
+            fi
+            else
+            echo "No bot process found, skipping stop."
+            exit 0
+            fi
+  
             echo "Checking if the bot has stopped..."
             attempts=0
             while pgrep -f 'java.*exchange_rates_bot-0.0.1-SNAPSHOT.jar' > /dev/null; do
