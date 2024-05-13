@@ -20,7 +20,7 @@ jobs:
           script: |
             cd /root/entsogBot
             git pull
-            ./gradlew build --exclude-task test
+            ./gradlew build --exclude-task test && gradle --stop
             sleep 10
             echo "Stopping the old bot..."
             # Останавливаем старый процесс бота
