@@ -332,10 +332,12 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                 sendMessage(chatId, "Началась загрузка файлов для КЗД");
                 fetchAndProcessDataForExport();
                 fetchAndProcessDataForExportTSO();
+                sendMessage(chatId, "Файлы для КЗС успешно направлены");
             }
             case OST -> {
                 sendMessage(chatId, "Началась загрузка файлов для пл.Островского");
                 fetchAndProcessData();
+                sendMessage(chatId, "Файлы для пл.Островского успешно отправлены");
             }
             case AGSI -> {
                 fetchAndProcessDataAGSI();
@@ -361,7 +363,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                 
                 /check - проверка работы бота, если отвечает, то ОК
                 
-                /agsi 
+                /agsi
                 
                              
                 /fileForKZD - скачать файлы для диспетчеров в КЗС
