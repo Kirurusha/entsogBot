@@ -25,13 +25,15 @@ jobs:
             echo "Stopping the old bot..."
             # Останавливаем старый процесс бота
             # pkill -f 'java -jar /***/entsogBot/build/libs/exchange_rates_bot-0.0.1-SNAPSHOT.jar' || true
-            pkill -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar'
+            #pkill -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar'
             # Даем время для полной остановки
+            echo "Checking if the bot has stopped..."
+            pgrep -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar' || echo "Bot stopped successfully."
             sleep 10
             
             #nohup java -jar /root/entsogBot/build/libs/exchange_rates_bot-0.0.1-SNAPSHOT.jar &> /dev/null &
             nohup java -jar /root/entsogBot/build/libs/exchange_rates_bot-0.0.1-SNAPSHOT.jar > nohup.out 2>&1 &
-
+            echo "Bot restarted and running in background. Checking nohup.out for output..."
             echo "Starting the new bot..."
             sleep 5
             cd /root/entsogBot/build/libs        
