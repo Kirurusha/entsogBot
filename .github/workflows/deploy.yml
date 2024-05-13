@@ -21,47 +21,33 @@ jobs:
             cd /root/entsogBot
             git pull
             ./gradlew build --exclude-task test && ./gradlew --stop
-            sleep 10
-            echo "Stopping the old bot..."
+            echo "Attempting to stop the old bot..."
             if pgrep -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar' > /dev/null; then
-            pkill -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar' || true
-            sleep 5
-            if ! pgrep -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar' > /dev/null; then
-            echo "Bot stopped successfully."
-            exit 0
-            else
-            echo "Failed to stop the bot after force attempt."
-            pkill -9 -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar'
-            sleep 5
-            if ! pgrep -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar' > /dev/null; then
-            echo "Forcefully stopped the bot."
-            exit 0
-            else
-            echo "Failed to stop the bot after all attempts."
-            exit 1
-            fi
-            fi
-            else
-            echo "No bot process found, skipping stop."
-            exit 0
-            fi
-  
-            echo "Checking if the bot has stopped..."
-            attempts=0
-            while pgrep -f 'java.*exchange_rates_bot-0.0.1-SNAPSHOT.jar' > /dev/null; do
-              if [ $attempts -ge 5 ]; then
-                echo "Failed to stop the bot after 5 attempts."
+              pkill -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar'
+              sleep 10
+              if pgrep -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar' > /dev/null; then
+                pkill -9 -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar'
+                sleep 5
+              fi
+              exit_status=$?
+              if [ $exit_status -eq 143 ]; then
+                echo "Bot terminated by SIGTERM, considered as successful stop."
+                exit 0
+              elif ! pgrep -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar' > /dev/null; then
+                echo "Bot stopped successfully."
+                exit 0
+              else
+                echo "Failed to stop the bot after all attempts."
                 exit 1
               fi
-              echo "Waiting for the bot to stop..."
-              sleep 5
-              attempts=$((attempts+1))
-            done
-            nohup java -jar /root/entsogBot/build/libs/exchange_rates_bot-0.0.1-SNAPSHOT.jar > nohup.out 2>&1 &
-            echo "Bot restarted and running in background. Checking nohup.out for output..."
+            else
+              echo "No bot process found, skipping stop."
+              exit 0
+            fi
             echo "Starting the new bot..."
+            nohup java -jar /***/entsogBot/build/libs/exchange_rates_bot-0.0.1-SNAPSHOT.jar > nohup.out 2>&1 &
             sleep 5
-            cd /root/entsogBot/build/libs        
-            echo "Bot restarted successfully!"
+            echo "Bot restarted and running in background. Checking nohup.out for output..."
+            cd /***/entsogBot/build/libs
+            echo "Deployment successful!"
             exit 0
-            echo "Exit successfully!"
