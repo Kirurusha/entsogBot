@@ -21,4 +21,40 @@ jobs:
             cd /root/entsogBot
             git pull
             ./gradlew build --exclude-task test && ./gradlew --stop
+            echo "Attempting to stop the old bot..."
+
+            # Check if pidfile exists and is not empty
+            if [ -s /root/entsogBot/pidfile ]; then
+              PID=$(cat /root/entsogBot/pidfile)
+              if kill -0 $PID > /dev/null 2>&1; then
+                kill $PID
+                sleep 10
+                if kill -0 $PID > /dev/null 2>&1; then
+                  echo "Process did not terminate with SIGTERM, using SIGKILL..."
+                  kill -9 $PID
+                  sleep 5
+                fi
+                if kill -0 $PID > /dev/null 2>&1; then
+                  echo "Failed to stop the bot after all attempts."
+                  exit 1
+                else
+                  echo "Bot stopped successfully."
+                  rm /root/entsogBot/pidfile
+                fi
+              else
+                echo "No process found with PID $PID, cleaning up pidfile."
+                rm /root/entsogBot/pidfile
+              fi
+            else
+              echo "No valid pidfile found, skipping stop."
+            fi
+
+            echo "Starting the new bot..."
+            nohup java -jar /root/entsogBot/build/libs/exchange_rates_bot-0.0.1-SNAPSHOT.jar > nohup.out 2>&1 &
+            echo $! > /root/entsogBot/pidfile
+            sleep 5
+            echo "Bot restarted and running in background. Checking nohup.out for output..."
+            cd /root/entsogBot/build/libs
+            echo "Deployment successful!"
+            exit 0
             
