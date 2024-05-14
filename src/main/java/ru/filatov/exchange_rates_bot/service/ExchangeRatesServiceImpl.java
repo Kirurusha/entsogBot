@@ -85,7 +85,9 @@ public class ExchangeRatesServiceImpl implements ExchangeRatesService {
         String formatDateTime = now.format(formatter);
 
         String fullUrl = baseUrl + queryParams;
-        System.out.println(fullUrl +" " + formatDateTime  );
+        //System.out.println(fullUrl +" " + formatDateTime  );
+        System.out.println("Downloading of operational data" + formatDateTime);
+
 
 
         int maxAttempts = 60;
@@ -151,7 +153,8 @@ public class ExchangeRatesServiceImpl implements ExchangeRatesService {
         String formatDateTime = now.format(formatter);
 
         String fullUrl = baseUrl + queryParams;
-        System.out.println(fullUrl +" " + formatDateTime  );
+        //System.out.println(fullUrl +" " + formatDateTime  );
+        System.out.println("Downloading files for TSO" + formatDateTime);
 
 
         int maxAttempts = 60;
@@ -270,7 +273,8 @@ public class ExchangeRatesServiceImpl implements ExchangeRatesService {
         String formatDateTime = now.format(formatter);
 
         String fullUrl = baseUrl ;
-        System.out.println(fullUrl +" " + formatDateTime  );
+        //System.out.println(fullUrl +" " + formatDateTime  );
+        System.out.println("Downloading files for AGSI"+ formatDateTime);
 
 
         int maxAttempts = 60;
