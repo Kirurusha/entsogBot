@@ -48,6 +48,7 @@ jobs:
             else
               echo "No valid pidfile found, skipping stop."
             fi
+            
 
             echo "Starting the new bot..."
             nohup java -jar /root/entsogBot/build/libs/exchange_rates_bot-0.0.1-SNAPSHOT.jar > nohup.out 2>&1 &
