@@ -21,6 +21,7 @@ jobs:
             cd /root/entsogBot
             git pull
             
+            
             echo "Attempting to stop the old bot..."
             if pgrep -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar' > /dev/null; then
               pkill -15 -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar'
