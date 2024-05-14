@@ -23,33 +23,31 @@ jobs:
             
             echo "Attempting to stop the old bot..."
             if pgrep -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar' > /dev/null; then
-              pkill -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar'
+              pkill -15 -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar'
               sleep 10
               if pgrep -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar' > /dev/null; then
+                echo "Process did not terminate with SIGTERM, using SIGKILL..."
                 pkill -9 -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar'
                 sleep 5
               fi
-              exit_status=$?
-              if [ $exit_status -eq 143 ]; then
-                echo "Bot terminated by SIGTERM, considered as successful stop."
-                exit 0
-              elif ! pgrep -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar' > /dev/null; then
-                echo "Bot stopped successfully."
-                exit 0
-              else
+              if pgrep -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar' > /dev/null; then
                 echo "Failed to stop the bot after all attempts."
                 exit 1
+              else
+                echo "Bot stopped successfully."
+                exit 0
               fi
             else
               echo "No bot process found, skipping stop."
               exit 0
             fi
+
             echo "Starting the new bot..."
             ./gradlew build --exclude-task test && ./gradlew --stop
             sleep 5
-            nohup java -jar /***/entsogBot/build/libs/exchange_rates_bot-0.0.1-SNAPSHOT.jar > nohup.out 2>&1 &
+            nohup java -jar /root/entsogBot/build/libs/exchange_rates_bot-0.0.1-SNAPSHOT.jar > nohup.out 2>&1 &
             sleep 5
             echo "Bot restarted and running in background. Checking nohup.out for output..."
-            cd /***/entsogBot/build/libs
+            cd /root/entsogBot/build/libs
             echo "Deployment successful!"
             exit 0
