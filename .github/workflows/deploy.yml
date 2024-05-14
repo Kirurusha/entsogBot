@@ -24,17 +24,14 @@ jobs:
             
             echo "Attempting to stop the old bot..."
             process_stopped=false
-            # Check if the process is running and attempt to stop it
             if pgrep -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar' > /dev/null; then
               pkill -15 -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar'
               sleep 10
-              # Check if the process is still running
               if pgrep -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar' > /dev/null; then
                 echo "Process did not terminate with SIGTERM, using SIGKILL..."
                 pkill -9 -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar'
                 sleep 5
               fi
-              # Final check if the process was successfully stopped
               if pgrep -f 'exchange_rates_bot-0.0.1-SNAPSHOT.jar' > /dev/null; then
                 echo "Failed to stop the bot after all attempts."
               else
@@ -46,7 +43,6 @@ jobs:
               process_stopped=true
             fi
 
-            # If the process was successfully stopped or no process was found, start the new bot
             if [ "$process_stopped" = true ]; then
               echo "Starting the new bot..."
               ./gradlew build --exclude-task test && ./gradlew --stop
