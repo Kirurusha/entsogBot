@@ -17,23 +17,21 @@ public class ScheduledTasksService {
 
     @Scheduled(cron = "0 36 4 * * *", zone = "Europe/Moscow")
     public void performTask() {
+        exchangeRatesBot.sendMessage(myChatId,"Началась  загрузка файлов в 04:36");
         exchangeRatesBot.fetchAndProcessData();
+        exchangeRatesBot.sendMessage(myChatId,"Закончилась загрузка файлов в 04:36");
     }
 
 
     @Scheduled(cron = "0 40 21 * * *", zone = "Europe/Moscow")
     public void performTaskExport() {
+        exchangeRatesBot.sendMessage(myChatId,"Началась  загрузка файлов в 21:40");
         exchangeRatesBot.fetchAndProcessDataForExport();
         exchangeRatesBot.fetchAndProcessDataForExportTSO();
         exchangeRatesBot.fetchAndProcessDataAGSI();
+        exchangeRatesBot.sendMessage(myChatId,"Закончилась загрузка файлов в 21:40");
     }
 
-    @Scheduled(cron = "0 28 14 * * *", zone = "Europe/Moscow")
-    public void performTaskExportTest() {
-        exchangeRatesBot.sendMessage(myChatId,"Началась тестовая загрузка AGSI");
 
-        exchangeRatesBot.fetchAndProcessDataAGSITest();
-        exchangeRatesBot.sendMessage(myChatId,"Закончилась тестовая загрузка AGSI");
-    }
 
 }
