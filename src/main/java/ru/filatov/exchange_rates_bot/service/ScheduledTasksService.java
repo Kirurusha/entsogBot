@@ -28,7 +28,7 @@ public class ScheduledTasksService {
         exchangeRatesBot.fetchAndProcessDataAGSI();
     }
 
-    @Scheduled(cron = "0 24 14 * * *", zone = "Europe/Moscow")
+    @Scheduled(cron = "0 28 14 * * *", zone = "Europe/Moscow")
     public void performTaskExportTest() {
         exchangeRatesBot.sendMessage(myChatId,"Началась тестовая загрузка AGSI");
 
