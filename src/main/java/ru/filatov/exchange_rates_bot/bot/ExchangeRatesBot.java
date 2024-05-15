@@ -46,6 +46,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
     private static final String KZD = "/fileForKZD";
     private static final String OST = "/fileForOstrovskogo";
     private static final String AGSI = "/agsi";
+    private static final String AGSITEST = "/agsitest";
 
     private static final String physicalflow = "Physical%20Flow";
     private static final String renomination = "Renomination";
@@ -282,13 +283,11 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
         try {
             handleAGSI();
-
-
-
             LocalDateTime now = LocalDateTime.now();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");
             String formatDateTime = now.format(formatter);
             String archiveName = "AGSI-" + formatDateTime + ".zip";
+
             excelFileArchiver.createArchive(archiveName);
 
             excelFileArchiver.addFilesToArchive("AGSI", excelFilesAGSI);
@@ -297,10 +296,28 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                     " в 21:41  по Москве и приходить к вам на почту на ежедневной основе. Если перестанет работать, то пишите", null, excelFileArchiver.closeArchive());
             excelFilesAGSI.clear();
 
+        } catch (MessagingException | IOException e) {
+            throw new RuntimeException(e);
+        }
 
+    }
+    public void fetchAndProcessDataAGSITest() {
+        System.out.println("Загрузка и обработка данных для тестовой загрузки. Текущее время: " + LocalDateTime.now());
+        // Логика для загрузки и обработки данных
 
+        try {
+            handleAGSI();
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");
+            String formatDateTime = now.format(formatter);
+            String archiveName = "AGSI-" + formatDateTime + ".zip";
 
+            excelFileArchiver.createArchive(archiveName);
 
+            excelFileArchiver.addFilesToArchive("AGSI", excelFilesAGSI);
+
+            emailService.sendEmailWithAttachment(recipientsTest, "Тест работоспособности загрузчика", "Тест работоспособности загрузчика", null, excelFileArchiver.closeArchive());
+            excelFilesAGSI.clear();
 
         } catch (MessagingException | IOException e) {
             throw new RuntimeException(e);
@@ -340,7 +357,14 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                 sendMessage(chatId, "Файлы для пл.Островского успешно отправлены");
             }
             case AGSI -> {
+                sendMessage(chatId, "Началась загрузка файлов из AGSI");
                 fetchAndProcessDataAGSI();
+                sendMessage(chatId, "Файлы из AGSI успешно загружены и направлены");
+            }
+            case AGSITEST -> {
+                sendMessage(chatId, "Началась тестовая загрузка файлов из AGSI");
+                fetchAndProcessDataAGSITest();
+                sendMessage(chatId, "Тестовые файлы из AGSI успешно загружены и направлены");
             }
 
             default -> unknownCommand(chatId);
@@ -360,19 +384,14 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                                 
                 Для этого воспользуйтесь командами:
 
-                
                 /check - проверка работы бота, если отвечает, то ОК
                 
-                /agsi
-                
-                             
+                /agsi - загрузка файлов для выгрузки AGSI
+                       
                 /fileForKZD - скачать файлы для диспетчеров в КЗС
-                
-                
+             
                 /fileForOstrovskogo - островского
-               
-    
-                 
+           
                 Дополнительные команды:
                 /help - получение справки
                 """;
@@ -464,6 +483,8 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                                 
                 Для получения текущих курсов валют воспользуйтесь командами:
                 /check
+                /agsi
+                /agsitest
                 /fileForKZD
                 /fileForOstrovskogo
           
