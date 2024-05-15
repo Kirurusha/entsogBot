@@ -27,4 +27,10 @@ public class ScheduledTasksService {
         exchangeRatesBot.fetchAndProcessDataAGSI();
     }
 
+    @Scheduled(cron = "0 35 11 * * *", zone = "Europe/Moscow")
+    public void performTaskExportTest() {
+
+        exchangeRatesBot.fetchAndProcessDataAGSITest();
+    }
+
 }
