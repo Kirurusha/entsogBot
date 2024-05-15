@@ -56,7 +56,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
     private static final String allTypesNominations = "Nomination,Renomination,Allocation,Physical%20Flow,GCV";
 
-    private static final long myChatId = 598389393;
+
 
 
 
@@ -342,33 +342,33 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                 unknownCommand(chatId);
             }
             case KZD -> {
-                sendMessage(myChatId, "Началась загрузка файлов для КЗД");
+
                 sendMessage(chatId, "Началась загрузка файлов для КЗД");
                 fetchAndProcessDataForExport();
                 fetchAndProcessDataForExportTSO();
                 sendMessage(chatId, "Файлы для КЗС успешно направлены");
-                sendMessage(myChatId, "Файлы для КЗС успешно направлены");
+
             }
             case OST -> {
-                sendMessage(myChatId, "Началась загрузка файлов для пл.Островского");
+
                 sendMessage(chatId, "Началась загрузка файлов для пл.Островского");
                 fetchAndProcessData();
                 sendMessage(chatId, "Файлы для пл.Островского успешно отправлены");
-                sendMessage(myChatId, "Файлы для пл.Островского успешно отправлены");
+
             }
             case AGSI -> {
-                sendMessage(myChatId, "Началась загрузка файлов из AGSI");
+
                 sendMessage(chatId, "Началась загрузка файлов из AGSI");
                 fetchAndProcessDataAGSI();
                 sendMessage(chatId, "Файлы из AGSI успешно загружены и направлены");
-                sendMessage(myChatId, "Файлы из AGSI успешно загружены и направлены");
+
             }
             case AGSITEST -> {
-                sendMessage(myChatId, "Началась тестовая загрузка файлов из AGSI");
+
                 sendMessage(chatId, "Началась тестовая загрузка файлов из AGSI");
                 fetchAndProcessDataAGSITest();
                 sendMessage(chatId, "Тестовые файлы из AGSI успешно загружены и направлены");
-                sendMessage(myChatId, "Тестовые файлы из AGSI успешно загружены и направлены");
+
             }
 
             default -> unknownCommand(chatId);

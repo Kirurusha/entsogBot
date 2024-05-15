@@ -7,6 +7,7 @@ import ru.filatov.exchange_rates_bot.bot.ExchangeRatesBot;
 public class ScheduledTasksService {
 
     private final ExchangeRatesBot exchangeRatesBot;
+    private static final long myChatId = 598389393;
 
     public ScheduledTasksService(ExchangeRatesBot exchangeRatesBot) {
         this.exchangeRatesBot = exchangeRatesBot;
@@ -27,10 +28,12 @@ public class ScheduledTasksService {
         exchangeRatesBot.fetchAndProcessDataAGSI();
     }
 
-    @Scheduled(cron = "0 35 11 * * *", zone = "Europe/Moscow")
+    @Scheduled(cron = "0 24 14 * * *", zone = "Europe/Moscow")
     public void performTaskExportTest() {
+        exchangeRatesBot.sendMessage(myChatId,"Началась тестовая загрузка AGSI");
 
         exchangeRatesBot.fetchAndProcessDataAGSITest();
+        exchangeRatesBot.sendMessage(myChatId,"Закончилась тестовая загрузка AGSI");
     }
 
 }
