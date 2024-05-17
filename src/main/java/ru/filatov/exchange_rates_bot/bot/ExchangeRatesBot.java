@@ -132,7 +132,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
     private static final List<ExcelFile> excelFilesHours = new ArrayList<>();
     private static final List<ExcelFile> excelFilesAGSI = new ArrayList<>();
     private static List<String> recipients = Arrays.asList("kirillfilatoww@mail.ru", "operatorsouth@gazpromexport.gazprom.ru"
-           , "operator@gazpromexport.gazprom.ru");
+           , "operator@gazpromexport.gazprom.ru", "cpdd-export@adm.gazprom.ru", "BoetzOperator@yandex.ru");
     private static List<String> recipientsExport = Arrays.asList("kirillfilatoww@mail.ru", "cpdd-export@adm.gazprom.ru");
     private static List<String> recipientsTest = Arrays.asList("kirillfilatoww@mail.ru");
 
