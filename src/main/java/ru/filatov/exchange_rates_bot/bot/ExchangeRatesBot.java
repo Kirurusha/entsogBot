@@ -142,7 +142,6 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
     @Autowired
     private ExchangeRatesService exchangeRatesService;
     @Autowired
-
     private EmailService emailService;
 
     public ExchangeRatesBot(@Value("${bot.token}") String botToken) {
