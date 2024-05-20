@@ -346,6 +346,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                 sendMessage(chatId, "Началась загрузка файлов для КЗД");
                 fetchAndProcessDataForExport();
                 fetchAndProcessDataForExportTSO();
+                fetchAndProcessDataAGSI();
                 sendMessage(chatId, "Файлы для КЗС успешно направлены");
 
             }
