@@ -24,10 +24,8 @@ public class ExcelFileArchiver {
     public void createArchive(String archiveName) throws IOException {
         this.archivePath = archiveName;
 
-        CharsetEncoder encoder = StandardCharsets.UTF_8.newEncoder();
         FileOutputStream fos = new FileOutputStream(archivePath);
-        OutputStreamWriter osw = new OutputStreamWriter(fos, encoder);
-        this.zos = new ZipOutputStream(fos);  // Инициализация zos
+        this.zos = new ZipOutputStream(fos, StandardCharsets.UTF_8);  // Инициализация zos с указанием кодировки
         ZipEntry folderEntry = new ZipEntry("entsog_2/");
         zos.putNextEntry(folderEntry);
         zos.closeEntry();
@@ -54,6 +52,9 @@ public class ExcelFileArchiver {
                 while ((length = in.read(buffer)) > 0) {
                     zos.write(buffer, 0, length);
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new RuntimeException("Error adding file to archive: " + file.getFilename(), e);
             }
             zos.closeEntry();
         }
@@ -62,6 +63,7 @@ public class ExcelFileArchiver {
     public String closeArchive() throws IOException {
         if (zos != null) {
             zos.close();  // Закрытие ZipOutputStream
+            zos = null;  // Обнуляем переменную для предотвращения повторного закрытия
         }
         return archivePath;
     }
