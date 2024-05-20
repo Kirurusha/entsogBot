@@ -33,6 +33,7 @@ public class EmailService {
             }
         });
 
+
         Message message = new MimeMessage(session);
         message.setFrom(new InternetAddress(fromEmail));
         InternetAddress[] recipientAddresses = toEmails.stream().map(email -> {
