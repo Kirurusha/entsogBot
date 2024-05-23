@@ -7,11 +7,10 @@ import ru.filatov.exchange_rates_bot.entity.ExcelFile;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.zip.*;
 
 @Service
@@ -19,6 +18,7 @@ public class ExcelFileArchiver {
 
     private ZipOutputStream zos;  // Объявление переменной на уровне класса
     private String archivePath;
+    private Set<String> existingEntries = new HashSet<>();
 
     // Инициализация ZipOutputStream перенесена в отдельный метод
     public void createArchive(String archiveName) throws IOException {
@@ -46,9 +46,12 @@ public class ExcelFileArchiver {
 
 
         for (ExcelFile file : files) {
-            ZipEntry zipEntry = new ZipEntry("entsog_2/" + folderName + "/" + file.getFilename());
+            String zipEntryName = "entsog_2/" + folderName +"/"+ file.getFilename();
+            zipEntryName = getUniqueEntryName(zipEntryName);
+            ZipEntry zipEntry = new ZipEntry(zipEntryName);
             zos.putNextEntry(zipEntry);
-            try (InputStream in = file.getInputStream()) {
+
+                try (InputStream in = file.getInputStream()) {
                 byte[] buffer = new byte[1024];
                 int length;
                 while ((length = in.read(buffer)) > 0) {
@@ -57,9 +60,29 @@ public class ExcelFileArchiver {
             } catch (IOException e) {
                 e.printStackTrace();
                 throw new RuntimeException("Error adding file to archive: " + file.getFilename(), e);
-            }
-            zos.closeEntry();
+            }finally {
+                    zos.closeEntry();
+                }
+
         }
+    }
+
+    private String getUniqueEntryName(String zipEntryName) {
+        String uniqueName = zipEntryName;
+        int count = 1;
+        while(existingEntries.contains(uniqueName)) {
+            int dotIndex =zipEntryName.lastIndexOf(".");
+            if (dotIndex != -1) {
+                String baseName = zipEntryName.substring(0, dotIndex);
+                String extension = zipEntryName.substring(dotIndex);
+                uniqueName = baseName + "_" + count  + extension;
+            } else {
+                uniqueName = zipEntryName + "_" + count;
+            }
+            count++;
+        }
+        existingEntries.add(uniqueName);
+        return uniqueName;
     }
 
     public String closeArchive() throws IOException {
