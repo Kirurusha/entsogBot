@@ -252,14 +252,15 @@ public class ExchangeRatesServiceImpl implements ExchangeRatesService {
 
     @Override
     public ExcelFile getExcelFileAGSI() throws SecurityException, ServiceException {
-
+        String baseUrl = "https://agsi.gie.eu/api?country=UA&days=10";
+        String apiKey = "9435cddc54496f4f11a24e129925b36d";
 
 
 
 
         //String baseUrl = "https://transparency.entsog.eu/api/v1/operationalData.xlsx";
         //String baseUrl = "https://agsi.gie.eu/api?country=UA&days=10%22%20--header%20%22x-key:%209435cddc54496f4f11a24e129925b36d%22";
-        String baseUrl = "https://agsi.gie.eu/api?country=UA&days=10%22%20--header%20%22x-key:%209435cddc54496f4f11a24e129925b36d%22";
+        //String baseUrl = "https://agsi.gie.eu/api?country=UA&days=10%22%20--header%20%22x-key:%209435cddc54496f4f11a24e129925b36d%22";
 
 
         //String pointDirectionsParam = String.join(",", pointDirections);
@@ -283,6 +284,7 @@ public class ExchangeRatesServiceImpl implements ExchangeRatesService {
                 HttpClient client = HttpClient.newHttpClient();
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create(fullUrl))
+                        .header("x-key", apiKey)
                         .GET()
                         .build();
 
