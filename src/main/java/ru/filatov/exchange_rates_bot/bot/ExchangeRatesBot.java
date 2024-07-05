@@ -388,74 +388,23 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
     }
 
 
+
     @Override
     public void onUpdateReceived(Update update) {
-        String userName = update.getMessage().getChat().getUserName();
-        if (update.hasCallbackQuery()) {
-            var query = update.getCallbackQuery();
-            var chatId = query.getMessage().getChatId();
-            var data = query.getData();
-            var callbackQueryId = query.getId();
-
-
-            if (chatId != 598389393) {
-
-                sendMessage(chatId, "Кто-то другой отправляет сообщения в Entsog bot " + userName);
-            }
-            // Получаем текущее время
-
-
-            // Уведомляем пользователя, что процесс начался
-            SendMessage loadingMessage = new SendMessage();
-            loadingMessage.setChatId(chatId.toString());
-
-            loadingMessage.setText("Процесс загрузки начался в "+ formattedTime() );
-            answerCallbackQuery(callbackQueryId, "Процесс загрузки начался ", false);
-            try {
-                Message message = execute(loadingMessage);
-
-                switch (data) {
-                    case "fileforostrovskogo" -> {
-                        // Выполнение команды
-                        fetchAndProcessData();
-                        // Уведомляем пользователя, что процесс завершился
-                        editMessage(chatId, message.getMessageId(), "Процесс загрузки завершен в "+ formattedTime() + " сообщение удалится через 2 секунды");
-                        // Удаляем сообщение через 2 секунды
-                        Thread.sleep(2000);
-                        deleteMessage(chatId, message.getMessageId());
-                    }
-                    case "fileforkzd" -> {
-                        // Выполнение команды
-                        fetchAndProcessDataForExport();
-                        fetchAndProcessDataForExportTSO();
-                        fetchAndProcessDataAGSI();
-                        // Уведомляем пользователя, что процесс завершился
-                        editMessage(chatId, message.getMessageId(), "Процесс загрузки завершен в "+ formattedTime()+ " сообщение удалится через 2 секунды");
-                        // Удаляем сообщение через 2 секунды
-                        Thread.sleep(2000);
-                        deleteMessage(chatId, message.getMessageId());
-                    }
-
-                    case "agsi" -> {
-                        // Выполнение команды
-                        fetchAndProcessDataAGSI();
-                        // Уведомляем пользователя, что процесс завершился
-                        editMessage(chatId, message.getMessageId(), "Процесс загрузки завершен в "+ formattedTime()+ " сообщение удалится через 2 секунды");
-                        // Удаляем сообщение через 2 секунды
-                        Thread.sleep(2000);
-                        deleteMessage(chatId, message.getMessageId());
-                    }
-                }
-            } catch (TelegramApiException | InterruptedException e) {
-                LOG.error("Ошибка обработки процесса", e);
-            }
-        } else if (update.hasMessage() && update.getMessage().hasText()) {
-            var message = update.getMessage().getText();
-            var chatId = update.getMessage().getChatId();
+        if (update.hasMessage() && update.getMessage().hasText()) {
+            // Обработка текстовых сообщений
+            var message = update.getMessage();
+            var messageText = message.getText();
+            var chatId = message.getChatId();
+            var userName = message.getChat().getUserName();
             System.out.println(chatId);
-            switch (message) {
+            if (chatId != 598389393) {
+                sendMessage(598389393L, "Кто-то другой отправляет сообщения в Entsog bot " + userName);
+            }
+
+            switch (messageText) {
                 case START -> {
-                   startCommand(chatId, userName);
+                    startCommand(chatId, userName);
                 }
                 case HELP -> {
                     helpCommand(chatId);
@@ -487,8 +436,57 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                 }
                 default -> unknownCommand(chatId);
             }
+        } else if (update.hasCallbackQuery()) {
+            // Обработка callback query
+            var query = update.getCallbackQuery();
+            var chatId = query.getMessage().getChatId();
+            var data = query.getData();
+            var callbackQueryId = query.getId();
+            String userName = query.getFrom().getUserName();
+
+            if (chatId != 598389393) {
+                sendMessage(598389393L, "Кто-то другой отправляет сообщения в Entsog bot " + userName);
+            }
+
+            // Уведомляем пользователя, что процесс начался
+            SendMessage loadingMessage = new SendMessage();
+            loadingMessage.setChatId(chatId.toString());
+            loadingMessage.setText("Процесс загрузки начался в " + formattedTime());
+            answerCallbackQuery(callbackQueryId, "Процесс загрузки начался", false);
+
+            try {
+                Message message = execute(loadingMessage);
+
+                switch (data) {
+                    case "fileforostrovskogo" -> {
+                        fetchAndProcessData();
+                        editMessage(chatId, message.getMessageId(), "Процесс загрузки завершен в " + formattedTime() + " сообщение удалится через 2 секунды");
+                        Thread.sleep(2000);
+                        deleteMessage(chatId, message.getMessageId());
+                    }
+                    case "fileforkzd" -> {
+                        fetchAndProcessDataForExport();
+                        fetchAndProcessDataForExportTSO();
+                        fetchAndProcessDataAGSI();
+                        editMessage(chatId, message.getMessageId(), "Процесс загрузки завершен в " + formattedTime() + " сообщение удалится через 2 секунды");
+                        Thread.sleep(2000);
+                        deleteMessage(chatId, message.getMessageId());
+                    }
+                    case "agsi" -> {
+                        fetchAndProcessDataAGSI();
+                        editMessage(chatId, message.getMessageId(), "Процесс загрузки завершен в " + formattedTime() + " сообщение удалится через 2 секунды");
+                        Thread.sleep(2000);
+                        deleteMessage(chatId, message.getMessageId());
+                    }
+                }
+            } catch (TelegramApiException | InterruptedException e) {
+                LOG.error("Ошибка обработки процесса", e);
+            }
+        } else {
+            LOG.warn("Получено обновление без сообщения или callback query");
         }
     }
+
 
 
     @Override
