@@ -10,7 +10,10 @@ import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.send.SendAnimation;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -354,6 +357,29 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
     }
 
+    public void editMessage(Long chatId, Integer messageId, String newText) {
+        EditMessageText editMessage = new EditMessageText();
+        editMessage.setChatId(chatId.toString());
+        editMessage.setMessageId(messageId);
+        editMessage.setText(newText);
+        try {
+            execute(editMessage);
+        } catch (TelegramApiException e) {
+            LOG.error("Ошибка редактирования сообщения", e);
+        }
+    }
+
+    public void deleteMessage(Long chatId, Integer messageId) {
+        DeleteMessage deleteMessage = new DeleteMessage();
+        deleteMessage.setChatId(chatId.toString());
+        deleteMessage.setMessageId(messageId);
+        try {
+            execute(deleteMessage);
+        } catch (TelegramApiException e) {
+            LOG.error("Ошибка удаления сообщения", e);
+        }
+    }
+
 
     @Override
     public void onUpdateReceived(Update update) {
@@ -364,23 +390,36 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
             var callbackQueryId = query.getId();
 
             // Уведомляем пользователя, что процесс начался
-            answerCallbackQuery(callbackQueryId, "Процесс загрузки начался...", false);
+            SendMessage loadingMessage = new SendMessage();
+            loadingMessage.setChatId(chatId.toString());
+            loadingMessage.setText("Процесс загрузки начался...");
+            try {
+                Message message = execute(loadingMessage);
 
-            switch (data) {
-                case "fileForOstrovskogo" -> {
-                    // Выполнение команды
-                    fetchAndProcessData();
-                    // Уведомляем пользователя, что процесс завершился
-                    answerCallbackQuery(callbackQueryId, "Процесс загрузки завершен!", false);
+                switch (data) {
+                    case "fileforostrovskogo" -> {
+                        // Выполнение команды
+                        fetchAndProcessData();
+                        // Уведомляем пользователя, что процесс завершился
+                        editMessage(chatId, message.getMessageId(), "Процесс загрузки завершен!");
+                        // Удаляем сообщение через 2 секунды
+                        Thread.sleep(2000);
+                        deleteMessage(chatId, message.getMessageId());
+                    }
+                    case "fileforkzd" -> {
+                        // Выполнение команды
+                        fetchAndProcessDataForExport();
+                        fetchAndProcessDataForExportTSO();
+                        fetchAndProcessDataAGSI();
+                        // Уведомляем пользователя, что процесс завершился
+                        editMessage(chatId, message.getMessageId(), "Процесс загрузки завершен!");
+                        // Удаляем сообщение через 2 секунды
+                        Thread.sleep(2000);
+                        deleteMessage(chatId, message.getMessageId());
+                    }
                 }
-                case "fileForKZD" -> {
-                    // Выполнение команды
-                    fetchAndProcessDataForExport();
-                    fetchAndProcessDataForExportTSO();
-                    fetchAndProcessDataAGSI();
-                    // Уведомляем пользователя, что процесс завершился
-                    answerCallbackQuery(callbackQueryId, "Процесс загрузки завершен!", false);
-                }
+            } catch (TelegramApiException | InterruptedException e) {
+                LOG.error("Ошибка обработки процесса", e);
             }
         } else if (update.hasMessage() && update.getMessage().hasText()) {
             var message = update.getMessage().getText();
@@ -441,7 +480,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                 """;
 
         var fomattedtext = String.format(text, username);
-        sendMessage(chatId, fomattedtext);
+        // sendMessage(chatId, fomattedtext);
         sendMessage(chatId, fomattedtext, createInlineKeyboard()); // Добавляем кнопки к сообщению
     }
 
