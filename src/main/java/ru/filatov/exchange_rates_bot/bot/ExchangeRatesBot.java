@@ -216,6 +216,31 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
 
     }
+    private InlineKeyboardMarkup createInlineKeyboard() {
+        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
+
+        // Создание первой строки кнопок
+        List<InlineKeyboardButton> row1 = new ArrayList<>();
+        InlineKeyboardButton button1 = new InlineKeyboardButton();
+        button1.setText("Загрузить файлы для Островского");
+        button1.setCallbackData("fileforostrovskogo");
+        row1.add(button1);
+        buttons.add(row1);
+
+        // Создание второй строки кнопок
+        List<InlineKeyboardButton> row2 = new ArrayList<>();
+        InlineKeyboardButton button2 = new InlineKeyboardButton();
+        button2.setText("Загрузить файлы для КЗС");
+        button2.setCallbackData("fileforkzd");
+        row2.add(button2);
+        buttons.add(row2);
+
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        inlineKeyboardMarkup.setKeyboard(buttons);
+        return inlineKeyboardMarkup;
+    }
+
+
 
 
     public void fetchAndProcessData() {
@@ -323,58 +348,67 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        long delay = 5000;
-        if (!update.hasMessage() || !update.getMessage().hasText()) {
-            return;
-        }
-        var message = update.getMessage().getText();
-        var chatId = update.getMessage().getChatId();
-        System.out.println(chatId);
-        switch (message) {
-            case START -> {
-                String userName = update.getMessage().getChat().getUserName();
-                startCommand(chatId, userName);
+        if (update.hasCallbackQuery()) {
+            var query = update.getCallbackQuery();
+            var chatId = query.getMessage().getChatId();
+            var data = query.getData();
+
+            switch (data) {
+                case "fileforostrovskogo" -> {
+                    sendMessage(chatId, "Началась загрузка файлов для пл.Островского");
+                    fetchAndProcessData();
+                    sendMessage(chatId, "Файлы для пл.Островского успешно отправлены");
+                }
+                case "fileforkzd" -> {
+                    sendMessage(chatId, "Началась загрузка файлов для КЗС");
+                    fetchAndProcessDataForExport();
+                    fetchAndProcessDataForExportTSO();
+                    fetchAndProcessDataAGSI();
+                    sendMessage(chatId, "Файлы для КЗС успешно направлены");
+                }
             }
-            case HELP -> {
-                helpCommand(chatId);
+        } else if (update.hasMessage() && update.getMessage().hasText()) {
+            var message = update.getMessage().getText();
+            var chatId = update.getMessage().getChatId();
+            System.out.println(chatId);
+            switch (message) {
+                case START -> {
+                    String userName = update.getMessage().getChat().getUserName();
+                    startCommand(chatId, userName);
+                }
+                case HELP -> {
+                    helpCommand(chatId);
+                }
+                case CHECK -> {
+                    unknownCommand(chatId);
+                }
+                case KZD -> {
+                    sendMessage(chatId, "Началась загрузка файлов для КЗС");
+                    fetchAndProcessDataForExport();
+                    fetchAndProcessDataForExportTSO();
+                    fetchAndProcessDataAGSI();
+                    sendMessage(chatId, "Файлы для КЗС успешно направлены");
+                }
+                case OST -> {
+                    sendMessage(chatId, "Началась загрузка файлов для пл.Островского");
+                    fetchAndProcessData();
+                    sendMessage(chatId, "Файлы для пл.Островского успешно отправлены");
+                }
+                case AGSI -> {
+                    sendMessage(chatId, "Началась загрузка файлов из AGSI");
+                    fetchAndProcessDataAGSI();
+                    sendMessage(chatId, "Файлы из AGSI успешно загружены и направлены");
+                }
+                case AGSITEST -> {
+                    sendMessage(chatId, "Началась тестовая загрузка файлов из AGSI");
+                    fetchAndProcessDataAGSITest();
+                    sendMessage(chatId, "Тестовые файлы из AGSI успешно загружены и направлены");
+                }
+                default -> unknownCommand(chatId);
             }
-            case CHECK -> {
-                unknownCommand(chatId);
-            }
-            case KZD -> {
-
-                sendMessage(chatId, "Началась загрузка файлов для КЗД");
-                fetchAndProcessDataForExport();
-                fetchAndProcessDataForExportTSO();
-                fetchAndProcessDataAGSI();
-                sendMessage(chatId, "Файлы для КЗС успешно направлены");
-
-            }
-            case OST -> {
-
-                sendMessage(chatId, "Началась загрузка файлов для пл.Островского");
-                fetchAndProcessData();
-                sendMessage(chatId, "Файлы для пл.Островского успешно отправлены");
-
-            }
-            case AGSI -> {
-
-                sendMessage(chatId, "Началась загрузка файлов из AGSI");
-                fetchAndProcessDataAGSI();
-                sendMessage(chatId, "Файлы из AGSI успешно загружены и направлены");
-
-            }
-            case AGSITEST -> {
-
-                sendMessage(chatId, "Началась тестовая загрузка файлов из AGSI");
-                fetchAndProcessDataAGSITest();
-                sendMessage(chatId, "Тестовые файлы из AGSI успешно загружены и направлены");
-
-            }
-
-            default -> unknownCommand(chatId);
         }
     }
+
 
     @Override
     public String getBotUsername() {
@@ -405,6 +439,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
         var fomattedtext = String.format(text, username);
         sendMessage(chatId, fomattedtext);
+        sendMessage(chatId, fomattedtext, createInlineKeyboard()); // Добавляем кнопки к сообщению
     }
 
 
@@ -418,6 +453,18 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
         }
 
     }
+    public void sendMessage(Long chatId, String text, InlineKeyboardMarkup replyMarkup) {
+        var chatIdStr = String.valueOf(chatId);
+        var sendMessage = new SendMessage(chatIdStr, text);
+        sendMessage.setReplyMarkup(replyMarkup);
+        try {
+            execute(sendMessage);
+        } catch (TelegramApiException e) {
+            LOG.error("Ошибка отправки сообщения", e);
+        }
+    }
+
+
 
 //    private void usdCommand(Long chatId) {
 //        String formattedText;
