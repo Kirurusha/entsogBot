@@ -402,7 +402,9 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
             // Уведомляем пользователя, что процесс начался
             SendMessage loadingMessage = new SendMessage();
             loadingMessage.setChatId(chatId.toString());
+
             loadingMessage.setText("Процесс загрузки начался в "+ formattedTime() );
+            answerCallbackQuery(query.getId(), "Процесс загрузки начался ", false);
             try {
                 Message message = execute(loadingMessage);
 
