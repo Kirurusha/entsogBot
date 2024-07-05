@@ -43,8 +43,8 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
     private static final String LOVE = "/love";
     private static final String EXCEL = "/excel";
     private static final String CHECK = "/check";
-    private static final String KZD = "/fileForKZD";
-    private static final String OST = "/fileForOstrovskogo";
+    private static final String KZD = "/fileforkzd";
+    private static final String OST = "/fileforostrovskogo";
     private static final String AGSI = "/agsi";
     private static final String AGSITEST = "/agsitest";
 
@@ -256,7 +256,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
             excelFileArchiver.addFilesToArchive("nominations", null);
 
 
-            emailService.sendEmailWithAttachment(recipients, "Данные для сводок Транзит Болгария Словакия", "Коллеги, такой файл, по идее, будет выгружаться" +
+            emailService.sendEmailWithAttachment(recipients, "Данные для сводок Транзит Болгария Словакия", "Коллеги, такой файл, будет выгружаться" +
                     " в 4 35 часов утра по Москве и приходить к вам на почту на ежедневной основе. Если перестанет работать, то пишите", null, excelFileArchiver.closeArchive());
 
 
@@ -287,8 +287,8 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
             excelFileArchiver.addFilesToArchive("AGSI", excelFilesAGSI);
 
-            emailService.sendEmailWithAttachment(recipientsExport, "Данные для сводки Динамика использования ПХГ Украины и реверсных поставок газа", "Коллеги, такой файл, по идее, будет выгружаться" +
-                    " в 21:41  по Москве и приходить к вам на почту на ежедневной основе. Если перестанет работать, то пишите", null, excelFileArchiver.closeArchive());
+            emailService.sendEmailWithAttachment(recipientsExport, "Данные для сводки Динамика использования ПХГ Украины и реверсных поставок газа", "Коллеги, такой файл, будет выгружаться" +
+                    " в 21:41  по Москве . Если перестанет работать, то пишите", null, excelFileArchiver.closeArchive());
             excelFilesAGSI.clear();
 
         } catch (MessagingException | IOException e) {
@@ -386,16 +386,18 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                 Добро пожаловать в бот, %s!
                                 
                 Здесь вы сможете скачать данные Entsog!
+                
+                В левом нижнем углу экрана есть кнопка Menu, где вы можете увидеть все доступные команды
                                 
                 Для этого воспользуйтесь командами:
-
-                /check - проверка работы бота, если отвечает, то ОК
+                  
+                /fileforkzd - скачать файлы для построения сводок в КЗС
+             
+                /fileforostrovskogo - скачать файлы для построения сводок на пл. Островского
+                
+                /check - проверка работы бота, если отвечает, то работает
                 
                 /agsi - загрузка файлов для выгрузки AGSI
-                       
-                /fileForKZD - скачать файлы для диспетчеров в КЗС
-             
-                /fileForOstrovskogo - островского
            
                 Дополнительные команды:
                 /help - получение справки
@@ -486,12 +488,12 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
         var text = """
                 Справочная информация по боту
                                 
-                Для получения текущих курсов валют воспользуйтесь командами:
-                /check
-                /agsi
-                /agsitest
-                /fileForKZD
-                /fileForOstrovskogo
+                Для скачивания файлов воспользуйтесь командами:
+                
+                /fileforkzd - скачать данные для построения сводок в КЗС
+                /fileforostrovskogo - скачать данные для построения сводок на пл. Островского
+                /agsi - скачать только AGSI
+                /agsitest 
           
                 """;
         sendMessage(chatId, text);
