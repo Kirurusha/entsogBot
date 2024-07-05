@@ -369,6 +369,13 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
         }
     }
 
+    public String formattedTime() {
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String formattedNow = now.format(formatter);
+        return formattedNow;
+    }
+
     public void deleteMessage(Long chatId, Integer messageId) {
         DeleteMessage deleteMessage = new DeleteMessage();
         deleteMessage.setChatId(chatId.toString());
@@ -389,10 +396,13 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
             var data = query.getData();
             var callbackQueryId = query.getId();
 
+            // Получаем текущее время
+
+
             // Уведомляем пользователя, что процесс начался
             SendMessage loadingMessage = new SendMessage();
             loadingMessage.setChatId(chatId.toString());
-            loadingMessage.setText("Процесс загрузки начался...");
+            loadingMessage.setText("Процесс загрузки начался в "+ formattedTime() );
             try {
                 Message message = execute(loadingMessage);
 
@@ -401,7 +411,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                         // Выполнение команды
                         fetchAndProcessData();
                         // Уведомляем пользователя, что процесс завершился
-                        editMessage(chatId, message.getMessageId(), "Процесс загрузки завершен!");
+                        editMessage(chatId, message.getMessageId(), "Процесс загрузки завершен в "+ formattedTime() + " сообщение удалится через 2 секунды");
                         // Удаляем сообщение через 2 секунды
                         Thread.sleep(2000);
                         deleteMessage(chatId, message.getMessageId());
@@ -412,7 +422,17 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                         fetchAndProcessDataForExportTSO();
                         fetchAndProcessDataAGSI();
                         // Уведомляем пользователя, что процесс завершился
-                        editMessage(chatId, message.getMessageId(), "Процесс загрузки завершен!");
+                        editMessage(chatId, message.getMessageId(), "Процесс загрузки завершен в "+ formattedTime()+ " сообщение удалится через 2 секунды");
+                        // Удаляем сообщение через 2 секунды
+                        Thread.sleep(2000);
+                        deleteMessage(chatId, message.getMessageId());
+                    }
+
+                    case "agsi" -> {
+                        // Выполнение команды
+                        fetchAndProcessDataAGSI();
+                        // Уведомляем пользователя, что процесс завершился
+                        editMessage(chatId, message.getMessageId(), "Процесс загрузки завершен в "+ formattedTime()+ " сообщение удалится через 2 секунды");
                         // Удаляем сообщение через 2 секунды
                         Thread.sleep(2000);
                         deleteMessage(chatId, message.getMessageId());
