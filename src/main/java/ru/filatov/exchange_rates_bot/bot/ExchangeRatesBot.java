@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.send.SendAnimation;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -235,6 +236,14 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
         row2.add(button2);
         buttons.add(row2);
 
+        // Создание второй строки кнопок
+        List<InlineKeyboardButton> row3 = new ArrayList<>();
+        InlineKeyboardButton button3 = new InlineKeyboardButton();
+        button3.setText("Загрузить AGSI");
+        button3.setCallbackData("agsi");
+        row3.add(button3);
+        buttons.add(row3);
+
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         inlineKeyboardMarkup.setKeyboard(buttons);
         return inlineKeyboardMarkup;
@@ -352,19 +361,25 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
             var query = update.getCallbackQuery();
             var chatId = query.getMessage().getChatId();
             var data = query.getData();
+            var callbackQueryId = query.getId();
+
+            // Уведомляем пользователя, что процесс начался
+            answerCallbackQuery(callbackQueryId, "Процесс загрузки начался...", false);
 
             switch (data) {
-                case "fileforostrovskogo" -> {
-                    sendMessage(chatId, "Началась загрузка файлов для пл.Островского");
+                case "fileForOstrovskogo" -> {
+                    // Выполнение команды
                     fetchAndProcessData();
-                    sendMessage(chatId, "Файлы для пл.Островского успешно отправлены");
+                    // Уведомляем пользователя, что процесс завершился
+                    answerCallbackQuery(callbackQueryId, "Процесс загрузки завершен!", false);
                 }
-                case "fileforkzd" -> {
-                    sendMessage(chatId, "Началась загрузка файлов для КЗС");
+                case "fileForKZD" -> {
+                    // Выполнение команды
                     fetchAndProcessDataForExport();
                     fetchAndProcessDataForExportTSO();
                     fetchAndProcessDataAGSI();
-                    sendMessage(chatId, "Файлы для КЗС успешно направлены");
+                    // Уведомляем пользователя, что процесс завершился
+                    answerCallbackQuery(callbackQueryId, "Процесс загрузки завершен!", false);
                 }
             }
         } else if (update.hasMessage() && update.getMessage().hasText()) {
@@ -419,20 +434,8 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
         var text = """
                 Добро пожаловать в бот, %s!
                                 
-                Здесь вы сможете скачать данные Entsog!
-                
-                В левом нижнем углу экрана есть кнопка Menu, где вы можете увидеть все доступные команды
-                                
-                Для этого воспользуйтесь командами:
-                  
-                /fileforkzd - скачать файлы для построения сводок в КЗС
-             
-                /fileforostrovskogo - скачать файлы для построения сводок на пл. Островского
-                
-                /check - проверка работы бота, если отвечает, то работает
-                
-                /agsi - загрузка файлов для выгрузки AGSI
-           
+                Здесь вы сможете скачать данные Entsog и AGSI!
+
                 Дополнительные команды:
                 /help - получение справки
                 """;
@@ -463,7 +466,17 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
             LOG.error("Ошибка отправки сообщения", e);
         }
     }
-
+    private void answerCallbackQuery(String callbackQueryId, String text, boolean showAlert) {
+        AnswerCallbackQuery answer = new AnswerCallbackQuery();
+        answer.setCallbackQueryId(callbackQueryId);
+        answer.setText(text);
+        answer.setShowAlert(showAlert); // true для показа алерта, false для уведомления
+        try {
+            execute(answer);
+        } catch (TelegramApiException e) {
+            LOG.error("Ошибка отправки уведомления", e);
+        }
+    }
 
 
 //    private void usdCommand(Long chatId) {
