@@ -293,6 +293,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
             excelFileArchiver.addFilesToArchive("nominations", null);
 
 
+
             emailService.sendEmailWithAttachment(recipients, "Данные для сводок Транзит Болгария Словакия", "Коллеги, такой файл, будет выгружаться" +
                     " в 4 35 часов утра по Москве и приходить к вам на почту на ежедневной основе. Если перестанет работать, то пишите", null, excelFileArchiver.closeArchive());
 
@@ -372,8 +373,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
     public String formattedTime() {
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String formattedNow = now.format(formatter);
-        return formattedNow;
+        return now.format(formatter);
     }
 
     public void deleteMessage(Long chatId, Integer messageId) {
@@ -494,8 +494,8 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                 Добро пожаловать в бот, %s!
                                 
                 Здесь вы сможете скачать данные Entsog и AGSI!
+                Для загрузки данных нажмите на одну из кнопок ниже.
 
-                Дополнительные команды:
                 /help - получение справки
                 """;
 
