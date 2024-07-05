@@ -1,6 +1,7 @@
 package ru.filatov.exchange_rates_bot.service;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import ru.filatov.exchange_rates_bot.bot.ExchangeRatesBot;
 
 import java.time.LocalDateTime;
@@ -39,11 +40,19 @@ public class ScheduledTasksService {
     @Scheduled(cron = "0 0 9,12,15,20,3 * * *", zone = "Europe/Moscow")
     public void performTest() {
 
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");
-        String formatDateTime = now.format(formatter);
 
-        exchangeRatesBot.sendMessage(myChatId,"Тест успешно пройдет в " + formatDateTime);
+
+        String formatDateTime =  exchangeRatesBot.formattedTime();
+        Message testMessage= exchangeRatesBot.sendMessageAndGetId(myChatId, "Тест успешно пройдет в " + formatDateTime);
+        if (testMessage != null) {
+            try {
+                Thread.sleep(2000);
+                exchangeRatesBot.deleteMessage(myChatId, testMessage.getMessageId());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
     }
 
 

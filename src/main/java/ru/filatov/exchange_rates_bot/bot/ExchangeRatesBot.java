@@ -532,6 +532,16 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
             LOG.error("Ошибка отправки сообщения", e);
         }
     }
+    public Message sendMessageAndGetId(Long chatId, String text) {
+        var chatIdStr = String.valueOf(chatId);
+        var sendMessage = new SendMessage(chatIdStr, text);
+        try {
+            return execute(sendMessage);
+        } catch (TelegramApiException e) {
+            LOG.error("Ошибка отправки сообщения", e);
+            return null;
+        }
+    }
     private void answerCallbackQuery(String callbackQueryId, String text, boolean showAlert) {
         AnswerCallbackQuery answer = new AnswerCallbackQuery();
         answer.setCallbackQueryId(callbackQueryId);
