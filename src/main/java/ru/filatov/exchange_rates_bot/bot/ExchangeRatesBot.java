@@ -390,12 +390,18 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
+        String userName = update.getMessage().getChat().getUserName();
         if (update.hasCallbackQuery()) {
             var query = update.getCallbackQuery();
             var chatId = query.getMessage().getChatId();
             var data = query.getData();
             var callbackQueryId = query.getId();
 
+
+            if (chatId != 598389393) {
+
+                sendMessage(chatId, "Кто-то другой отправляет сообщения в Entsog bot " + userName);
+            }
             // Получаем текущее время
 
 
@@ -404,7 +410,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
             loadingMessage.setChatId(chatId.toString());
 
             loadingMessage.setText("Процесс загрузки начался в "+ formattedTime() );
-            answerCallbackQuery(query.getId(), "Процесс загрузки начался ", false);
+            answerCallbackQuery(callbackQueryId, "Процесс загрузки начался ", false);
             try {
                 Message message = execute(loadingMessage);
 
@@ -449,8 +455,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
             System.out.println(chatId);
             switch (message) {
                 case START -> {
-                    String userName = update.getMessage().getChat().getUserName();
-                    startCommand(chatId, userName);
+                   startCommand(chatId, userName);
                 }
                 case HELP -> {
                     helpCommand(chatId);
