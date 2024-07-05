@@ -4,12 +4,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.send.SendAnimation;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
@@ -495,19 +497,29 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
     }
 
     private void startCommand(Long chatId, String username) {
-        var text = """
-                Добро пожаловать в бот, %s!
-                                
-                Здесь вы сможете скачать данные Entsog и AGSI!
-                Для загрузки данных нажмите на одну из кнопок ниже.
+        ClassPathResource imageResource = new ClassPathResource("static/images/image.jpg");
+        try {
+            // Создаем объект SendPhoto для отправки изображения
+            SendPhoto sendPhoto = new SendPhoto();
+            sendPhoto.setChatId(chatId.toString());
+            sendPhoto.setPhoto(new InputFile(imageResource.getInputStream(), "image.png"));
 
-                /help - получение справки
-                """;
+            // Добавляем подпись к изображению
+            String caption = String.format(
+                    "Добро пожаловать в бот, %s!\n\n" +
+                            "Здесь вы сможете скачать данные Entsog и AGSI!\n" +
+                            "Для загрузки данных нажмите на одну из кнопок ниже.\n\n" +
+                            "/help - получение справки", username);
+            sendPhoto.setCaption(caption);
 
-        var fomattedtext = String.format(text, username);
-        // sendMessage(chatId, fomattedtext);
-        sendMessage(chatId, fomattedtext, createInlineKeyboard()); // Добавляем кнопки к сообщению
-    }
+            // Добавляем кнопки
+            sendPhoto.setReplyMarkup(createInlineKeyboard());
+
+            // Отправляем изображение
+            execute(sendPhoto);
+        } catch (TelegramApiException | IOException e) {
+            LOG.error("Ошибка отправки изображения", e);
+        }}
 
 
     public void sendMessage(Long chatId, String text) {
