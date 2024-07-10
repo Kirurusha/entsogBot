@@ -47,6 +47,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
     private static final String USD = "/usd";
     private static final String EUR = "/eur";
     private static final String HELP = "/help";
+    private static final String HELPGROUP = "/help@newWathesForPronBot_bot";
     private static final String LOVE = "/love";
     private static final String EXCEL = "/excel";
     private static final String CHECK = "/check";
@@ -401,7 +402,8 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
             var chatId = message.getChatId();
             var userName = message.getChat().getUserName();
             System.out.println(chatId);
-            if (chatId != 598389393) {
+            if (chatId != 598389393 && !userName.equals("kirillfilatoww")) {
+
                 sendMessage(598389393L, "Кто-то другой отправляет сообщения в Entsog bot " + userName);
             }
 
@@ -409,7 +411,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                 case START, STARTGROUP -> {
                     startCommand(chatId, userName);
                 }
-                case HELP -> {
+                case HELP ,HELPGROUP-> {
                     helpCommand(chatId);
                 }
                 case CHECK -> {
