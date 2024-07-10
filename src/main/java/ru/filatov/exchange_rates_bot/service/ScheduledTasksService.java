@@ -21,19 +21,42 @@ public class ScheduledTasksService {
 
     @Scheduled(cron = "0 36 4 * * *", zone = "Europe/Moscow")
     public void performTask() {
-        exchangeRatesBot.sendMessage(myChatId,"Началась  загрузка файлов в 04:36");
+
+        Message testMessage= exchangeRatesBot.sendMessageAndGetId(myChatId, "Началась  загрузка файлов в 04:36" );
+
         exchangeRatesBot.fetchAndProcessData();
-        exchangeRatesBot.sendMessage(myChatId,"Закончилась загрузка файлов в 04:36");
+
+        if (testMessage != null) {
+            try {
+                Thread.sleep(2000);
+                exchangeRatesBot.deleteMessage(myChatId, testMessage.getMessageId());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 
     @Scheduled(cron = "0 40 21 * * *", zone = "Europe/Moscow")
     public void performTaskExport() {
-        exchangeRatesBot.sendMessage(myChatId,"Началась  загрузка файлов в 21:40");
+        //exchangeRatesBot.sendMessage(myChatId,"Началась  загрузка файлов в 21:40");
+
+        Message testMessage= exchangeRatesBot.sendMessageAndGetId(myChatId, "Началась  загрузка файлов в 21:40" );
+
+
+
         exchangeRatesBot.fetchAndProcessDataForExport();
         exchangeRatesBot.fetchAndProcessDataForExportTSO();
         exchangeRatesBot.fetchAndProcessDataAGSI();
-        exchangeRatesBot.sendMessage(myChatId,"Закончилась загрузка файлов в 21:40");
+
+        if (testMessage != null) {
+            try {
+                Thread.sleep(2000);
+                exchangeRatesBot.deleteMessage(myChatId, testMessage.getMessageId());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 

@@ -43,6 +43,7 @@ import java.util.List;
 public class ExchangeRatesBot extends TelegramLongPollingBot {
     private static final Logger LOG = LoggerFactory.getLogger(ExchangeRatesBot.class);
     private static final String START = "/start";
+    private static final String STARTGROUP= "/start@newWathesForPronBot_bot";
     private static final String USD = "/usd";
     private static final String EUR = "/eur";
     private static final String HELP = "/help";
@@ -405,7 +406,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
             }
 
             switch (messageText) {
-                case START -> {
+                case START, STARTGROUP -> {
                     startCommand(chatId, userName);
                 }
                 case HELP -> {
