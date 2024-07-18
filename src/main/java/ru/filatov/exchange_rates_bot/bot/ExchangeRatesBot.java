@@ -173,10 +173,10 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
             handleDayFiles(null, DAY_POINTS_SET_3, nomination,period1);
             Thread.sleep(delay);
 
-//            LocalDateTime now = LocalDateTime.now();
-//            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");
-//            String formatDateTime = now.format(formatter);
-            String archiveName = "entsog-" + formattedTime("yyyy_MM_dd_HH_mm_ss") + ".zip";
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");
+            String formatDateTime = now.format(formatter);
+            String archiveName = "entsog-" + formatDateTime + ".zip";
             excelFileArchiver.createArchive(archiveName);
             excelFileArchiver.addFilesToArchive("days", excelFilesDays);
             emailService.sendEmailWithAttachment(recipientsExport, "Данные для сводки показатели транспорта черех ПСП на границах Украины", "Коллеги, такой файл, по идее, будет выгружаться" +
@@ -196,12 +196,12 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
         try {
 
             handleDayFilesForTSO(null, DAY_TSO_SET_4, allTypesNominations,period2);
-//            LocalDateTime now = LocalDateTime.now();
-//            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");
-//            String formatDateTime = now.format(formatter);
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");
+            String formatDateTime = now.format(formatter);
 
             try {
-                String archiveName = "entsog_" + formattedTime("yyyy_MM_dd_HH_mm_ss") + ".zip";
+                String archiveName = "entsog_" + formatDateTime + ".zip";
                 excelFileArchiver.createArchive(archiveName);
                 excelFileArchiver.addFilesToArchive("days", excelFilesDays);
                 emailService.sendEmailWithAttachment(recipientsExport, "Данные для сводки Динамика использования ПХГ Украины и реверсных поставок газа", "Коллеги, такой файл, по идее, будет выгружаться" +
@@ -228,26 +228,32 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
         List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
 
         // Создание первой строки кнопок
-        buttons.add(createButtonRow("Загрузить файлы для Островского", "fileforostrovskogo"));
+        List<InlineKeyboardButton> row1 = new ArrayList<>();
+        InlineKeyboardButton button1 = new InlineKeyboardButton();
+        button1.setText("Загрузить файлы для Островского");
+        button1.setCallbackData("fileforostrovskogo");
+        row1.add(button1);
+        buttons.add(row1);
 
         // Создание второй строки кнопок
-        buttons.add(createButtonRow("Загрузить файлы для КЗС", "fileforkzd"));
+        List<InlineKeyboardButton> row2 = new ArrayList<>();
+        InlineKeyboardButton button2 = new InlineKeyboardButton();
+        button2.setText("Загрузить файлы для КЗС");
+        button2.setCallbackData("fileforkzd");
+        row2.add(button2);
+        buttons.add(row2);
 
-        // Создание третьей строки кнопок
-        buttons.add(createButtonRow("Загрузить AGSI", "agsi"));
+        // Создание второй строки кнопок
+        List<InlineKeyboardButton> row3 = new ArrayList<>();
+        InlineKeyboardButton button3 = new InlineKeyboardButton();
+        button3.setText("Загрузить AGSI");
+        button3.setCallbackData("agsi");
+        row3.add(button3);
+        buttons.add(row3);
 
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         inlineKeyboardMarkup.setKeyboard(buttons);
         return inlineKeyboardMarkup;
-    }
-
-    private List<InlineKeyboardButton> createButtonRow(String buttonText, String callbackData) {
-        List<InlineKeyboardButton> row = new ArrayList<>();
-        InlineKeyboardButton button = new InlineKeyboardButton();
-        button.setText(buttonText);
-        button.setCallbackData(callbackData);
-        row.add(button);
-        return row;
     }
 
 
@@ -280,10 +286,10 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
             handleHourFile(null, DAY_POINTS_SET_1, physicalflow,period3);
 
 
-//            LocalDateTime now = LocalDateTime.now();
-//            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");
-//            String formatDateTime = now.format(formatter);
-            String archiveName = "entsog-" + formattedTime("yyyy_MM_dd_HH_mm_ss") + ".zip";
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");
+            String formatDateTime = now.format(formatter);
+            String archiveName = "entsog-" + formatDateTime + ".zip";
             excelFileArchiver.createArchive(archiveName);
 
             excelFileArchiver.addFilesToArchive("hours", excelFilesHours);
@@ -314,10 +320,10 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
         try {
             handleAGSI();
-//            LocalDateTime now = LocalDateTime.now();
-//            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");
-//            String formatDateTime = now.format(formatter);
-            String archiveName = "AGSI-" + formattedTime("yyyy_MM_dd_HH_mm_ss") + ".zip";
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");
+            String formatDateTime = now.format(formatter);
+            String archiveName = "AGSI-" + formatDateTime + ".zip";
 
             excelFileArchiver.createArchive(archiveName);
 
@@ -338,10 +344,10 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
         try {
             handleAGSI();
-//            LocalDateTime now = LocalDateTime.now();
-//            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");
-//            String formatDateTime = now.format(formatter);
-            String archiveName = "AGSI-" + formattedTime("yyyy_MM_dd_HH_mm_ss") + ".zip";
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");
+            String formatDateTime = now.format(formatter);
+            String archiveName = "AGSI-" + formatDateTime + ".zip";
 
             excelFileArchiver.createArchive(archiveName);
 
@@ -373,11 +379,6 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         return now.format(formatter);
     }
-    public String formattedTime(String pattern) {
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
-        return now.format(formatter);
-    }
 
     public void deleteMessage(Long chatId, Integer messageId) {
         DeleteMessage deleteMessage = new DeleteMessage();
@@ -401,10 +402,10 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
             var chatId = message.getChatId();
             var userName = message.getChat().getUserName();
             System.out.println(chatId);
-            if (chatId != 598389393 && userName != null && !userName.equals("kirillfilatoww")) {
+            if (chatId != 598389393 && !userName.equals("kirillfilatoww")) {
+
                 sendMessage(598389393L, "Кто-то другой отправляет сообщения в Entsog bot " + userName);
             }
-
 
             switch (messageText) {
                 case START, STARTGROUP -> {
@@ -484,7 +485,6 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                     }
                 }
             } catch (TelegramApiException | InterruptedException e) {
-                sendMessage(chatId,"Ошибка загрузки callback query");
                 LOG.error("Ошибка обработки процесса", e);
             }
         } else {
