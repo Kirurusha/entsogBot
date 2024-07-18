@@ -34,6 +34,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 @Service
 public class ExchangeRatesServiceImpl implements ExchangeRatesService {
@@ -61,6 +62,16 @@ public class ExchangeRatesServiceImpl implements ExchangeRatesService {
         return exctractCurrencyValueFromXML(xml, EUR_XPATH);
     }
 
+    public String formattedTime(String pattern) {
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+        return now.format(formatter);
+    }
+
+    public String formattedTimeFromSpecialDate(LocalDate localDate, String pattern) {
+        return localDate.format(DateTimeFormatter.ofPattern(pattern));
+    }
+
     @Override
     public ExcelFile  getExcelFile(String periodType, List<String> pointDirections, int daysBefore, int daysAfter, String reqType) throws ServiceException {
 
@@ -68,8 +79,10 @@ public class ExchangeRatesServiceImpl implements ExchangeRatesService {
         LocalDate startDate = currentDate.minusDays(daysBefore);
         LocalDate endDate = currentDate.plusDays(daysAfter);
 
-        String formattedStartDate = startDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        String formattedEndDate = endDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        //String formattedStartDate = startDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        String formattedStartDate = formattedTimeFromSpecialDate(startDate, "yyyy-MM-dd");
+        //String formattedEndDate = endDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        String formattedEndDate = formattedTimeFromSpecialDate(endDate, "yyyy-MM-dd");
 
         String baseUrl = "https://transparency.entsog.eu/api/v1/operationalData.xlsx";
 
@@ -80,13 +93,13 @@ public class ExchangeRatesServiceImpl implements ExchangeRatesService {
                 "?forceDownload=true&isTransportData=true&dataset=1&from=%s&to=%s&indicators=%s&periodType=%s&timezone=CET&periodize=0&limit=-1&pointDirection=%s",
                 formattedStartDate, formattedEndDate,reqType, periodType, URLEncoder.encode(pointDirectionsParam, StandardCharsets.UTF_8)
         );
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String formatDateTime = now.format(formatter);
+//        LocalDateTime now = LocalDateTime.now();
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+//        String formatDateTime = now.format(formatter);
 
         String fullUrl = baseUrl + queryParams;
         //System.out.println(fullUrl +" " + formatDateTime  );
-        System.out.println("Downloading of operational data " + formatDateTime);
+        System.out.println("Downloading of operational data " + formattedTime("yyyy-MM-dd HH:mm:ss"));
 
 
 
@@ -133,8 +146,10 @@ public class ExchangeRatesServiceImpl implements ExchangeRatesService {
         LocalDate startDate = currentDate.minusDays(daysBefore);
         LocalDate endDate = currentDate.plusDays(daysAfter);
 
-        String formattedStartDate = startDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        String formattedEndDate = endDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        //String formattedStartDate = startDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        String formattedStartDate = formattedTimeFromSpecialDate(startDate, "yyyy-MM-dd");
+        //String formattedEndDate = endDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        String formattedEndDate = formattedTimeFromSpecialDate(startDate, "yyyy-MM-dd");
 
         String baseUrl = "https://transparency.entsog.eu/api/v1/operationalData.xlsx";
 
@@ -148,13 +163,13 @@ public class ExchangeRatesServiceImpl implements ExchangeRatesService {
                 "?forceDownload=true&from=%s&to=%s&indicator=%s&periodType=%s&timezone=CET&periodize=0&limit=-1&isTransportData=true&dataset=1&operatorLabel=%s",
                 formattedStartDate, formattedEndDate,reqType, periodType, URLEncoder.encode(pointDirectionsParam, StandardCharsets.UTF_8)
         );
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String formatDateTime = now.format(formatter);
+//        LocalDateTime now = LocalDateTime.now();
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+//        String formatDateTime = now.format(formatter);
 
         String fullUrl = baseUrl + queryParams;
         //System.out.println(fullUrl +" " + formatDateTime  );
-        System.out.println("Downloading files for TSO " + formatDateTime);
+        System.out.println("Downloading files for TSO " + formattedTime("yyyy-MM-dd HH:mm:ss"));
 
 
         int maxAttempts = 60;
@@ -203,8 +218,8 @@ public class ExchangeRatesServiceImpl implements ExchangeRatesService {
 
 
 
-        String formattedcurrentDate = currentDate.format(DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss"));
-        String filename = "AGSI_data_for_" + formattedcurrentDate + ".xlsx";
+//        String formattedcurrentDate = currentDate.format(DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss"));
+        String filename = "AGSI_data_for_" + formattedTime("yyyy_MM_dd_HH_mm_ss") + ".xlsx";
 
         try (Workbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("Data");
