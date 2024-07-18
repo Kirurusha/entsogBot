@@ -402,10 +402,13 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
             var chatId = message.getChatId();
             var userName = message.getChat().getUserName();
             System.out.println(chatId);
-            if (chatId != 598389393 && !userName.equals("kirillfilatoww")) {
 
+
+
+            if (chatId != 598389393 && userName != null && !userName.equals("kirillfilatoww")) {
                 sendMessage(598389393L, "Кто-то другой отправляет сообщения в Entsog bot " + userName);
             }
+
 
             switch (messageText) {
                 case START, STARTGROUP -> {
