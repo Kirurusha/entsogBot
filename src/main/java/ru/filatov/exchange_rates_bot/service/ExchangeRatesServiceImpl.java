@@ -149,7 +149,7 @@ public class ExchangeRatesServiceImpl implements ExchangeRatesService {
         //String formattedStartDate = startDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         String formattedStartDate = formattedTimeFromSpecialDate(startDate, "yyyy-MM-dd");
         //String formattedEndDate = endDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        String formattedEndDate = formattedTimeFromSpecialDate(startDate, "yyyy-MM-dd");
+        String formattedEndDate = formattedTimeFromSpecialDate(endDate, "yyyy-MM-dd");
 
         String baseUrl = "https://transparency.entsog.eu/api/v1/operationalData.xlsx";
 
