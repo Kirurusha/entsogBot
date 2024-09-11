@@ -168,7 +168,7 @@ public class ExchangeRatesServiceImpl implements ExchangeRatesService {
 //        String formatDateTime = now.format(formatter);
 
         String fullUrl = baseUrl + queryParams;
-        //System.out.println(fullUrl +" " + formatDateTime  );
+        System.out.println(fullUrl   );
         System.out.println("Downloading files for TSO " + formattedTime("yyyy-MM-dd HH:mm:ss"));
 
 
