@@ -218,7 +218,7 @@ public class ExchangeRatesServiceImpl implements ExchangeRatesService {
     }
 
 
-    @Override
+   /* @Override
     public ExcelFile getExcelFileForTSO(String periodType, List<String> pointDirections, int daysBefore, int daysAfter, String reqType) throws SecurityException, ServiceException {
 
         LocalDate currentDate = LocalDate.now();
@@ -287,7 +287,83 @@ public class ExchangeRatesServiceImpl implements ExchangeRatesService {
             }
         }
         return null;
+    }*/
+
+    @Override
+    public ExcelFile getExcelFileForTSO(String periodType, List<String> pointDirections, int daysBefore, int daysAfter, String reqType) throws SecurityException, ServiceException {
+
+        LocalDate currentDate = LocalDate.now();
+        LocalDate startDate = currentDate.minusDays(daysBefore);
+        LocalDate endDate = currentDate.plusDays(daysAfter);
+
+        String formattedStartDate = formattedTimeFromSpecialDate(startDate, "yyyy-MM-dd");
+        String formattedEndDate = formattedTimeFromSpecialDate(endDate, "yyyy-MM-dd");
+
+        String baseUrl = "https://transparency.entsog.eu/api/v1/operationalData.xlsx";
+        String pointDirectionsParam = String.join(",", pointDirections);
+
+        String queryParams = String.format(
+                "?forceDownload=true&from=%s&to=%s&indicator=%s&periodType=%s&timezone=CET&periodize=0&limit=-1&isTransportData=true&dataset=1&operatorLabel=%s",
+                formattedStartDate, formattedEndDate, reqType, periodType, URLEncoder.encode(pointDirectionsParam, StandardCharsets.UTF_8)
+        );
+
+        String fullUrl = baseUrl + queryParams;
+        System.out.println(fullUrl);
+        System.out.println("Downloading files for TSO " + formattedTime("yyyy-MM-dd HH:mm:ss"));
+
+        int maxAttempts = 60;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+                // Отключение проверки SSL
+                SSLContext sslContext = SSLContext.getInstance("TLS");
+                sslContext.init(null, new TrustManager[]{new X509TrustManager() {
+                    public X509Certificate[] getAcceptedIssuers() {
+                        return null;
+                    }
+
+                    public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                    }
+
+                    public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                    }
+                }}, new java.security.SecureRandom());
+
+                // Создание клиента HTTP с отключенной проверкой SSL
+                HttpClient client = HttpClient.newBuilder()
+                        .sslContext(sslContext)
+                        .build();
+
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(fullUrl))
+                        .GET()
+                        .build();
+
+                HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+
+                if (response.statusCode() == 200) {
+                    InputStream inputStream = response.body();
+                    Optional<String> contentDisposition = response.headers().firstValue("Content-Disposition");
+                    String filename = contentDisposition.map(cd -> cd.split("filename=")[1].replaceAll("\"", "")).orElse("default_filename.xlsx");
+                    return new ExcelFile(inputStream, filename);
+                } else if (response.statusCode() >= 500) {
+                    if (attempt < maxAttempts) {
+                        System.out.println("Получена ошибка 500, попытка номер " + attempt);
+                        Thread.sleep(1000); // Задержка в 1 секунду перед следующей попыткой
+                        continue;
+                    } else {
+                        throw new ServiceException("Ошибка при получении файла Excel: HTTP статус " + response.statusCode(), new IOException());
+                    }
+                } else {
+                    throw new ServiceException("Ошибка при получении файла Excel: HTTP статус " + response.statusCode(), new IOException());
+                }
+            } catch (IOException | InterruptedException | NoSuchAlgorithmException | KeyManagementException e) {
+                Thread.currentThread().interrupt();
+                throw new ServiceException("Ошибка при скачивании файла Excel", e);
+            }
+        }
+        return null;
     }
+
 
 
     private ExcelFile convertJsonToExcel(List<Map<String, Object>> dataList) throws IOException {
