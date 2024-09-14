@@ -48,14 +48,30 @@ jobs:
             else
               echo "No valid pidfile found, skipping stop."
             fi
-            
 
             echo "Starting the new bot..."
             nohup java -jar /root/entsogBot/build/libs/exchange_rates_bot-0.0.1-SNAPSHOT.jar > nohup.out 2>&1 &
             echo $! > /root/entsogBot/pidfile
             sleep 5
-            echo "Bot restarted and running in background. Checking nohup.out for output..."
-            cd /root/entsogBot/build/libs
+            echo "Bot restarted and running in background."
+
+            # Check if chatbot application is running, and start it if it's not
+            if ! pgrep -f "chatAPIBot-0.0.1-SNAPSHOT.jar" > /dev/null; then
+              echo "Chatbot is not running. Starting it..."
+              nohup java -jar /root/chatbot/target/chatAPIBot-0.0.1-SNAPSHOT.jar > /root/chatbot/target/nohup.out 2>&1 &
+              echo $! > /root/chatbot/target/pidfile
+            else
+              echo "Chatbot is already running."
+            fi
+
+            # Check if ddconverter application is running, and start it if it's not
+            if ! pgrep -f "chatjptbot-0.0.1-SNAPSHOT.jar" > /dev/null; then
+              echo "DDConverter is not running. Starting it..."
+              nohup java -jar /root/ddconverter/target/chatjptbot-0.0.1-SNAPSHOT.jar > /root/ddconverter/target/nohup.out 2>&1 &
+              echo $! > /root/ddconverter/target/pidfile
+            else
+              echo "DDConverter is already running."
+            fi
+
             echo "Deployment successful!"
             exit 0
-            
