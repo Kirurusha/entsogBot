@@ -650,20 +650,20 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
                 switch (data) {
                     case "fileforostrovskogo" -> {
-                        fetchAndProcessData();
-                        //fetchAndProcessData(String.valueOf(query.getMessage().getChatId()));
+                        //fetchAndProcessData();
+                        fetchAndProcessData(String.valueOf(query.getMessage().getChatId()));
                         editMessage(chatId, message.getMessageId(), "Процесс загрузки завершен в " + formattedTime() + " сообщение удалится через 2 секунды");
                         Thread.sleep(2000);
                         deleteMessage(chatId, message.getMessageId());
                     }
                     case "fileforkzd" -> {
-                        fetchAndProcessDataForExport();
-                        //fetchAndProcessDataForExport(String.valueOf(query.getMessage().getChatId()));
-                        fetchAndProcessDataForExportTSO();
-                        //fetchAndProcessDataForExportTSO(String.valueOf(query.getMessage().getChatId()));
-                        //fetchAndProcessDataAGSI(String.valueOf(query.getMessage().getChatId()));
-                        fetchAndProcessDataAGSI();
-                        //fetchAndProcessDataAGSI(String.valueOf(query.getMessage().getChatId()));
+                        //fetchAndProcessDataForExport();
+                        fetchAndProcessDataForExport(String.valueOf(query.getMessage().getChatId()));
+                        //fetchAndProcessDataForExportTSO();
+                        fetchAndProcessDataForExportTSO(String.valueOf(query.getMessage().getChatId()));
+                        fetchAndProcessDataAGSI(String.valueOf(query.getMessage().getChatId()));
+                        //fetchAndProcessDataAGSI();
+                        fetchAndProcessDataAGSI(String.valueOf(query.getMessage().getChatId()));
                         editMessage(chatId, message.getMessageId(), "Процесс загрузки завершен в " + formattedTime() + " сообщение удалится через 2 секунды");
                         Thread.sleep(2000);
                         deleteMessage(chatId, message.getMessageId());
