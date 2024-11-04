@@ -663,7 +663,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                         fetchAndProcessDataForExportTSO(String.valueOf(query.getMessage().getChatId()));
                         fetchAndProcessDataAGSI(String.valueOf(query.getMessage().getChatId()));
                         //fetchAndProcessDataAGSI();
-                        fetchAndProcessDataAGSI(String.valueOf(query.getMessage().getChatId()));
+                        //fetchAndProcessDataAGSI(String.valueOf(query.getMessage().getChatId()));
                         editMessage(chatId, message.getMessageId(), "Процесс загрузки завершен в " + formattedTime() + " сообщение удалится через 2 секунды");
                         Thread.sleep(2000);
                         deleteMessage(chatId, message.getMessageId());
