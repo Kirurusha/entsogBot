@@ -180,8 +180,8 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
             String archiveName = "entsog-" + formatDateTime + ".zip";
             excelFileArchiver.createArchive(archiveName);
             excelFileArchiver.addFilesToArchive("days", excelFilesDays);
-            emailService.sendEmailWithAttachment(recipientsExport, "Данные для сводки показатели транспорта черех ПСП на границах Украины", "Коллеги, такой файл, по идее, будет выгружаться" +
-                    " в 21:31  по Москве и приходить к вам на почту на ежедневной основе. Если перестанет работать, то пишите", null, excelFileArchiver.closeArchive());
+            emailService.sendEmailWithAttachment(recipientsExport, "Данные для сводки показатели транспорта через ПСП на границах Украины",
+                    "Файл с данными для сводки во вложении", null, excelFileArchiver.closeArchive());
             excelFilesDays.clear();
         } catch (InterruptedException | MessagingException | IOException e) {
             throw new RuntimeException(e);
@@ -237,8 +237,8 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                 String archiveName = "entsog_" + formatDateTime + ".zip";
                 excelFileArchiver.createArchive(archiveName);
                 excelFileArchiver.addFilesToArchive("days", excelFilesDays);
-                emailService.sendEmailWithAttachment(recipientsExport, "Данные для сводки Динамика использования ПХГ Украины и реверсных поставок газа", "Коллеги, такой файл, по идее, будет выгружаться" +
-                        " в 21:31  по Москве и приходить к вам на почту на ежедневной основе. Если перестанет работать, то пишите", null, excelFileArchiver.closeArchive());
+                emailService.sendEmailWithAttachment(recipientsExport, "Данные для сводки Динамика использования ПХГ Украины и реверсных поставок газа",
+                        "Файл с данными для сводки во вложении", null, excelFileArchiver.closeArchive());
                 excelFilesDays.clear();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -372,8 +372,8 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
 
 
-            emailService.sendEmailWithAttachment(recipients, "Данные для сводок Транзит Болгария Словакия", "Коллеги, такой файл, будет выгружаться" +
-                    " в 4 35 часов утра по Москве и приходить к вам на почту на ежедневной основе. Если перестанет работать, то пишите", null, excelFileArchiver.closeArchive());
+            emailService.sendEmailWithAttachment(recipients, "Данные для сводок Транзит Болгария Словакия",
+                    "Файл с данными для сводки во вложении", null, excelFileArchiver.closeArchive());
 
 
             excelFilesHours.clear();
@@ -457,8 +457,8 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
             excelFileArchiver.addFilesToArchive("AGSI", excelFilesAGSI);
 
-            emailService.sendEmailWithAttachment(recipientsExport, "Данные для сводки Динамика использования ПХГ Украины и реверсных поставок газа", "Коллеги, такой файл, будет выгружаться" +
-                    " в 21:41  по Москве . Если перестанет работать, то пишите", null, excelFileArchiver.closeArchive());
+            emailService.sendEmailWithAttachment(recipientsExport, "Данные для сводки Динамика использования ПХГ Украины и реверсных поставок газа",
+                    "Файл с данными для сводки во вложении", null, excelFileArchiver.closeArchive());
             excelFilesAGSI.clear();
 
         } catch (MessagingException | IOException e) {
@@ -657,20 +657,20 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                         deleteMessage(chatId, message.getMessageId());
                     }
                     case "fileforkzd" -> {
-                        //fetchAndProcessDataForExport();
-                        fetchAndProcessDataForExport(String.valueOf(query.getMessage().getChatId()));
-                        //fetchAndProcessDataForExportTSO();
-                        fetchAndProcessDataForExportTSO(String.valueOf(query.getMessage().getChatId()));
-                        fetchAndProcessDataAGSI(String.valueOf(query.getMessage().getChatId()));
-                        //fetchAndProcessDataAGSI();
+                        fetchAndProcessDataForExport();
+                        //fetchAndProcessDataForExport(String.valueOf(query.getMessage().getChatId()));
+                        fetchAndProcessDataForExportTSO();
+                        //fetchAndProcessDataForExportTSO(String.valueOf(query.getMessage().getChatId()));
+                        //fetchAndProcessDataAGSI(String.valueOf(query.getMessage().getChatId()));
+                        fetchAndProcessDataAGSI();
                         //fetchAndProcessDataAGSI(String.valueOf(query.getMessage().getChatId()));
                         editMessage(chatId, message.getMessageId(), "Процесс загрузки завершен в " + formattedTime() + " сообщение удалится через 2 секунды");
                         Thread.sleep(2000);
                         deleteMessage(chatId, message.getMessageId());
                     }
                     case "agsi" -> {
-                        //fetchAndProcessDataAGSI();
-                        fetchAndProcessDataAGSI(String.valueOf(query.getMessage().getChatId()));
+                        fetchAndProcessDataAGSI();
+                        //fetchAndProcessDataAGSI(String.valueOf(query.getMessage().getChatId()));
                         editMessage(chatId, message.getMessageId(), "Процесс загрузки завершен в " + formattedTime() + " сообщение удалится через 2 секунды");
                         Thread.sleep(2000);
                         deleteMessage(chatId, message.getMessageId());
