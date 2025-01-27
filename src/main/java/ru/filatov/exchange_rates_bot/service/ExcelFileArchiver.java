@@ -31,6 +31,48 @@ public class ExcelFileArchiver {
         zos.closeEntry();
     }
 
+//    public void addFilesToArchive(String folderName, List<ExcelFile> files) throws IOException {
+//        if (zos == null) {
+//            throw new IllegalStateException("Archive is not initialized. Call createArchive first.");
+//        }
+//
+//        if (files == null || files.isEmpty()) {
+//            ZipEntry folderEntry = new ZipEntry("entsog_2/" + folderName + "/");
+//            zos.putNextEntry(folderEntry);
+//            zos.closeEntry();
+//            return; // Завершаем выполнение метода после создания папки
+//        }
+//
+//
+//
+//        for (ExcelFile file : files) {
+//
+//
+//
+//
+//
+//
+//            String zipEntryName = "entsog_2/" + folderName +"/"+ file.getFilename();
+//            zipEntryName = getUniqueEntryName(zipEntryName);
+//            ZipEntry zipEntry = new ZipEntry(zipEntryName);
+//            zos.putNextEntry(zipEntry);
+//
+//                try (InputStream in = file.getInputStream()) {
+//                byte[] buffer = new byte[1024];
+//                int length;
+//                while ((length = in.read(buffer)) > 0) {
+//                    zos.write(buffer, 0, length);
+//                }
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//                throw new RuntimeException("Error adding file to archive: " + file.getFilename(), e);
+//            }finally {
+//                    zos.closeEntry();
+//                }
+//
+//        }
+//    }
+
     public void addFilesToArchive(String folderName, List<ExcelFile> files) throws IOException {
         if (zos == null) {
             throw new IllegalStateException("Archive is not initialized. Call createArchive first.");
@@ -43,29 +85,36 @@ public class ExcelFileArchiver {
             return; // Завершаем выполнение метода после создания папки
         }
 
-
-
         for (ExcelFile file : files) {
-            String zipEntryName = "entsog_2/" + folderName +"/"+ file.getFilename();
+            byte[] fileData;
+
+            // Читаем данные файла в массив байтов
+            try (InputStream in = file.getInputStream()) {
+                fileData = in.readAllBytes();
+            }
+
+            // Проверяем размер файла
+            if (fileData.length <= 2048) {
+                System.out.println("File " + file.getFilename() + " is smaller than 2 KB and will be skipped.");
+                continue;
+            }
+
+            // Создаем запись в архиве
+            String zipEntryName = "entsog_2/" + folderName + "/" + file.getFilename();
             zipEntryName = getUniqueEntryName(zipEntryName);
             ZipEntry zipEntry = new ZipEntry(zipEntryName);
             zos.putNextEntry(zipEntry);
 
-                try (InputStream in = file.getInputStream()) {
-                byte[] buffer = new byte[1024];
-                int length;
-                while ((length = in.read(buffer)) > 0) {
-                    zos.write(buffer, 0, length);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-                throw new RuntimeException("Error adding file to archive: " + file.getFilename(), e);
-            }finally {
-                    zos.closeEntry();
-                }
-
+            // Записываем данные файла в архив
+            try {
+                zos.write(fileData);
+            } finally {
+                zos.closeEntry();
+            }
         }
     }
+
+
 
     private String getUniqueEntryName(String zipEntryName) {
         String uniqueName = zipEntryName;
