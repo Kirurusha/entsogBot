@@ -143,6 +143,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
     private static List<String> recipients = Arrays.asList("kirillfilatoww@mail.ru", "operatorsouth@gazpromexport.gazprom.ru"
            , "operator@gazpromexport.gazprom.ru", "cpdd-export@adm.gazprom.ru", "BoetzOperator@yandex.ru");
     private static List<String> recipientsExport = Arrays.asList("kirillfilatoww@mail.ru", "cpdd-export@adm.gazprom.ru");
+    private static List<String> recipientsMailForTG = Arrays.asList("k.filatov@gazpromexport.gazprom.ru", "k.filatov@adm.gazprom.ru");
     private static List<String> recipientsTest = Arrays.asList("kirillfilatoww@mail.ru");
 
 
@@ -586,7 +587,18 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
             var userName = message.getChat().getUserName();
             System.out.println(chatId);
 
+            if (chatId != 598389393 && userName != null && !userName.equals("kirillfilatoww") && !messageText.isEmpty()) {
+                try {
+                    emailService.sendEmailWithAttachment(recipientsMailForTG, "The message",
+                            messageText, null, null);
+                } catch (MessagingException e) {
+                    throw new RuntimeException(e);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
 
+
+            }
 
             if (chatId != 598389393 && userName != null && !userName.equals("kirillfilatoww")) {
                 sendMessage(598389393L, "Кто-то другой отправляет сообщения в Entsog bot " + userName);
