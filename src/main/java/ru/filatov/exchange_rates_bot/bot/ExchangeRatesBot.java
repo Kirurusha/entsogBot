@@ -587,7 +587,14 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
             var userName = message.getChat().getUserName();
             System.out.println(chatId);
 
-            if (chatId != 598389393 && userName != null && !userName.equals("kirillfilatoww") && !messageText.isEmpty()) {
+
+
+            if (chatId == 598389393  && !messageText.isEmpty()) {
+
+                System.out.println("chatId: " + chatId);
+                System.out.println("userName: " + userName);
+                System.out.println("messageText: '" + messageText + "'");
+                System.out.println("recipientsMailForTG: " + recipientsMailForTG);
                 try {
                     emailService.sendEmailWithAttachment(recipientsMailForTG, "The message",
                             messageText, null, null);
