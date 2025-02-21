@@ -144,6 +144,8 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
            , "operator@gazpromexport.gazprom.ru", "cpdd-export@adm.gazprom.ru", "BoetzOperator@yandex.ru");
     private static List<String> recipientsExport = Arrays.asList("kirillfilatoww@mail.ru", "cpdd-export@adm.gazprom.ru");
     private static List<String> recipientsMailForTG = Arrays.asList("k.filatov@gazpromexport.gazprom.ru", "k.filatov@adm.gazprom.ru");
+    private static List<String> recipientsMailForArtem = Arrays.asList("a.sysoev@adm.gazprom.ru");
+    private static List<String> recipientsMailForAndrew = Arrays.asList("an.bondarev@adm.gazprom.ru");
     private static List<String> recipientsTest = Arrays.asList("kirillfilatoww@mail.ru");
 
 
@@ -591,10 +593,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
             if (chatId == 598389393  && !messageText.isEmpty()) {
 
-                System.out.println("chatId: " + chatId);
-                System.out.println("userName: " + userName);
-                System.out.println("messageText: '" + messageText + "'");
-                System.out.println("recipientsMailForTG: " + recipientsMailForTG);
+
                 try {
                     emailService.sendEmailWithAttachment(recipientsMailForTG, "The message",
                             messageText, null, null);
@@ -606,8 +605,38 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
 
             }
+            //Andrew
+            if (chatId == 1631640988  && !messageText.isEmpty()) {
 
-            if (chatId != 598389393 && userName != null && !userName.equals("kirillfilatoww")) {
+
+                try {
+                    emailService.sendEmailWithAttachment(recipientsMailForAndrew, "The message",
+                            messageText, null, null);
+                } catch (MessagingException e) {
+                    throw new RuntimeException(e);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+
+            }
+            //Artem
+            if (chatId == 501924312  && !messageText.isEmpty()) {
+
+
+                try {
+                    emailService.sendEmailWithAttachment(recipientsMailForArtem, "The message",
+                            messageText, null, null);
+                } catch (MessagingException e) {
+                    throw new RuntimeException(e);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+
+            }
+
+            if (chatId != 501924312 && userName != null && !userName.equals("kirillfilatoww")) {
                 sendMessage(598389393L, "Кто-то другой отправляет сообщения в Entsog bot " + userName);
             }
 
