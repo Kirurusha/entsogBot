@@ -1,17 +1,26 @@
 package ru.filatov.exchange_rates_bot.service;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import ru.filatov.exchange_rates_bot.bot.ExchangeRatesBot;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class ScheduledTasksService {
 
     private final ExchangeRatesBot exchangeRatesBot;
     private static final long myChatId = 598389393;
+
+
+    @Autowired
+    private JsonToExcelService jsonToExcelService;
+
 
     public ScheduledTasksService(ExchangeRatesBot exchangeRatesBot) {
         this.exchangeRatesBot = exchangeRatesBot;
@@ -77,6 +86,32 @@ public class ScheduledTasksService {
         }
 
     }
+
+    @Scheduled(cron = "0 */1 7-10 * * *", zone = "Europe/Moscow")
+    public void scheduledDataCheck() {
+        LocalDate targetDate = LocalDate.now().minusDays(2); // Сегодня -2 дня
+
+        // Если на этот день уже были обработаны данные, ничего не делаем
+        if (jsonToExcelService.processedDates.getOrDefault(targetDate, false)) {
+            System.out.println("На " + targetDate + " уже отправлены данные. Проверка пропущена.");
+            return;
+        }
+
+        // Проверяем данные
+        boolean hasValidData = jsonToExcelService.checkForValidData(targetDate);
+        System.out.println(hasValidData);
+
+        // Если найдены данные, запускаем действие и отмечаем день как обработанный
+        if (hasValidData) {
+            exchangeRatesBot.fetchAndProcessDataTSOUA();
+            System.out.println("Началась загрузка данных для ОГТСУ");
+            //jsonToExcelService.downloadAndSaveData();
+            //performAction(targetDate);
+            jsonToExcelService.processedDates.put(targetDate, true);
+            System.out.println("Изменен флаг для даты");
+        }
+    }
+
 
 
 
