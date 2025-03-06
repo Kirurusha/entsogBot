@@ -23,7 +23,8 @@ dependencies {
 	implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.11.0'
 	// Jackson для работы с JSON
 	implementation 'com.fasterxml.jackson.core:jackson-databind:2.10.3'
-
+	implementation("org.json:json:20210307")
+	implementation("org.apache.poi:poi-ooxml:5.2.3")
 // Apache POI для создания Excel файлов
 	implementation 'org.apache.poi:poi-ooxml:4.1.2'
 
