@@ -339,6 +339,10 @@ public class JsonToExcelService {
         CreationHelper creationHelper = workbook.getCreationHelper();
         dateCellStyle.setDataFormat(creationHelper.createDataFormat().getFormat("dd.MM.yyyy"));
 
+        // Создаём стиль для чисел с запятой
+        CellStyle numberCellStyle = workbook.createCellStyle();
+        numberCellStyle.setDataFormat(creationHelper.createDataFormat().getFormat("#,##0.00"));
+
         // Данные
         int rowNum = 1;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
@@ -352,25 +356,37 @@ public class JsonToExcelService {
             dateCell.setCellStyle(dateCellStyle); // Применяем стиль
 
             // Данные
-            Object kaushanyValue = entry.getValue().getOrDefault("Каушаны_физика", "н/д");
-            Object moldovaValue = entry.getValue().getOrDefault("Юг_Молдавии_физика", "н/д");
+            String kaushanyValue = entry.getValue().getOrDefault("Каушаны_физика", "н/д");
+            String moldovaValue = entry.getValue().getOrDefault("Юг_Молдавии_физика", "н/д");
 
-// Создаём ячейки и вставляем либо число, либо "н/д"
+            // Создаём ячейки
             Cell kaushanyCell = row.createCell(1);
             Cell moldovaCell = row.createCell(2);
 
-            if (kaushanyValue instanceof String) {
-                kaushanyCell.setCellValue((String) kaushanyValue);
+            // Если значение "н/д" — вставляем как текст
+            if ("н/д".equals(kaushanyValue)) {
+                kaushanyCell.setCellValue("н/д");
             } else {
-                kaushanyCell.setCellValue(((Number) kaushanyValue).doubleValue());
+                try {
+                    double number = Double.parseDouble(kaushanyValue.replace(",", ".")); // Поддержка чисел с запятой
+                    kaushanyCell.setCellValue(number);
+                    kaushanyCell.setCellStyle(numberCellStyle); // Применяем числовой стиль
+                } catch (NumberFormatException e) {
+                    kaushanyCell.setCellValue(kaushanyValue); // Если ошибка, записываем как текст
+                }
             }
 
-            if (moldovaValue instanceof String) {
-                moldovaCell.setCellValue((String) moldovaValue);
+            if ("н/д".equals(moldovaValue)) {
+                moldovaCell.setCellValue("н/д");
             } else {
-                moldovaCell.setCellValue(((Number) moldovaValue).doubleValue());
+                try {
+                    double number = Double.parseDouble(moldovaValue.replace(",", ".")); // Поддержка чисел с запятой
+                    moldovaCell.setCellValue(number);
+                    moldovaCell.setCellStyle(numberCellStyle); // Применяем числовой стиль
+                } catch (NumberFormatException e) {
+                    moldovaCell.setCellValue(moldovaValue);
+                }
             }
-
         }
 
         // Автоширина колонок
@@ -384,6 +400,7 @@ public class JsonToExcelService {
 
         return new ExcelFile(new ByteArrayInputStream(outputStream.toByteArray()), filename);
     }
+
 
 
 
