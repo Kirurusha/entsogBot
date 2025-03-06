@@ -27,6 +27,7 @@ import ru.filatov.exchange_rates_bot.entity.ExcelFile;
 import ru.filatov.exchange_rates_bot.service.EmailService;
 import ru.filatov.exchange_rates_bot.service.ExcelFileArchiver;
 import ru.filatov.exchange_rates_bot.service.ExchangeRatesService;
+import ru.filatov.exchange_rates_bot.service.JsonToExcelService;
 
 import javax.mail.MessagingException;
 import java.io.File;
@@ -140,6 +141,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
     private static final List<ExcelFile> excelFilesDays = new ArrayList<>();
     private static final List<ExcelFile> excelFilesHours = new ArrayList<>();
     private static final List<ExcelFile> excelFilesAGSI = new ArrayList<>();
+    private static final List<ExcelFile> excelFilesEXL = new ArrayList<>();
     private static List<String> recipients = Arrays.asList("kirillfilatoww@mail.ru", "operatorsouth@gazpromexport.gazprom.ru"
            , "operator@gazpromexport.gazprom.ru", "cpdd-export@adm.gazprom.ru", "BoetzOperator@yandex.ru");
     private static List<String> recipientsExport = Arrays.asList("kirillfilatoww@mail.ru", "cpdd-export@adm.gazprom.ru");
@@ -155,6 +157,11 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
     private ExchangeRatesService exchangeRatesService;
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private JsonToExcelService jsonToExcelService;
+
+
 
     public ExchangeRatesBot(@Value("${bot.token}") String botToken) {
         super(botToken);
@@ -327,6 +334,13 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
         row3.add(button3);
         buttons.add(row3);
 
+        List<InlineKeyboardButton> row4 = new ArrayList<>();
+        InlineKeyboardButton button4 = new InlineKeyboardButton();
+        button4.setText("Загрузить ОГТСУ");
+        button4.setCallbackData("tsoua");
+        row4.add(button4);
+        buttons.add(row4);
+
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         inlineKeyboardMarkup.setKeyboard(buttons);
         return inlineKeyboardMarkup;
@@ -469,6 +483,34 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
         }
 
     }
+    public void fetchAndProcessDataTSOUA() {
+        try {
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");
+            LocalDateTime now = LocalDateTime.now();
+            String formatDateTime = now.format(formatter);
+
+            String archiveName = "EXL-" + formatDateTime + ".zip";
+            excelFilesEXL.add(jsonToExcelService.downloadAndSaveData());
+
+            excelFileArchiver.createArchive(archiveName);
+
+            excelFileArchiver.addFilesToArchive("EXL", excelFilesEXL);
+
+            emailService.sendEmailWithAttachment(recipients, "Данные ОГТСУ",
+                    "Файл с данными ОГТСУ во вложении", null, excelFileArchiver.closeArchive());
+            excelFilesAGSI.clear();
+            LocalDate targetDate = LocalDate.now().minusDays(2);
+            jsonToExcelService.processedDates.put(targetDate, true);
+
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
 
     public void fetchAndProcessDataAGSI(String chatId) {
         System.out.println("Загрузка и обработка данных. Текущее время: " + LocalDateTime.now());
@@ -591,7 +633,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
 
 
-            if (chatId == 598389393  && !messageText.isEmpty()) {
+            if (chatId == 598389393  && !messageText.isEmpty() && !messageText.startsWith("/start")) {
 
 
                 try {
@@ -606,7 +648,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
             }
             //Andrew
-            if (chatId == 1631640988  && !messageText.isEmpty()) {
+            if (chatId == 1631640988  && !messageText.isEmpty() && !messageText.startsWith("/start")) {
 
 
                 try {
@@ -621,7 +663,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
             }
             //Artem
-            if (chatId == 501924312  && !messageText.isEmpty()) {
+            if (chatId == 501924312  && !messageText.isEmpty() && !messageText.startsWith("/start") ) {
 
 
                 try {
@@ -636,7 +678,7 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
 
             }
 
-            if (chatId != 501924312 && userName != null && !userName.equals("kirillfilatoww")) {
+            if (chatId != 598389393 && userName != null && !userName.equals("kirillfilatoww")) {
                 sendMessage(598389393L, "Кто-то другой отправляет сообщения в Entsog bot " + userName);
             }
 
@@ -649,7 +691,13 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                     helpCommand(chatId);
                 }
                 case CHECK -> {
-                    unknownCommand(chatId);
+
+                    try {
+                        jsonToExcelService.downloadAndSaveData();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+
                 }
                 case KZD -> {
                     sendMessage(chatId, "Началась загрузка файлов для КЗС");
@@ -717,11 +765,22 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                         deleteMessage(chatId, message.getMessageId());
                     }
                     case "agsi" -> {
+
+                         //fetchAndProcessDataTSOUA();
                         fetchAndProcessDataAGSI();
-                        //fetchAndProcessDataAGSI(String.valueOf(query.getMessage().getChatId()));
-                        editMessage(chatId, message.getMessageId(), "Процесс загрузки завершен в " + formattedTime() + " сообщение удалится через 2 секунды");
-                        Thread.sleep(2000);
+//
+                       editMessage(chatId, message.getMessageId(), "Процесс загрузки завершен в " + formattedTime() + " сообщение удалится через 2 секунды");
+                      Thread.sleep(2000);
                         deleteMessage(chatId, message.getMessageId());
+                    }
+                    case "tsoua" -> {
+
+                        fetchAndProcessDataTSOUA();
+//                        fetchAndProcessDataAGSI();
+//
+//                        editMessage(chatId, message.getMessageId(), "Процесс загрузки завершен в " + formattedTime() + " сообщение удалится через 2 секунды");
+//                        Thread.sleep(2000);
+//                        deleteMessage(chatId, message.getMessageId());
                     }
                 }
             } catch (TelegramApiException | InterruptedException e) {
@@ -731,6 +790,8 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
             LOG.warn("Получено обновление без сообщения или callback query");
         }
     }
+
+
 
 
 
