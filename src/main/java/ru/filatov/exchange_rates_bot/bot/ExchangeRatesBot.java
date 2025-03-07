@@ -36,6 +36,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -501,7 +503,17 @@ public class ExchangeRatesBot extends TelegramLongPollingBot {
                     "Файл с данными ОГТСУ во вложении", null, excelFileArchiver.closeArchive());
             excelFilesAGSI.clear();
             LocalDate targetDate = LocalDate.now().minusDays(2);
-            jsonToExcelService.processedDates.put(targetDate, true);
+
+            LocalTime nowForTsoua = LocalTime.now(ZoneId.of("Europe/Moscow"));
+
+            // Проверяем, что текущее время после 10:00 по Москве
+            if (nowForTsoua.isAfter(LocalTime.of(10, 0))) {
+                jsonToExcelService.processedDates.put(targetDate, true);
+                System.out.println("Дата " + targetDate + " обновлена (МСК).");
+            } else {
+                System.out.println("Дата " + targetDate + " не изменена, так как текущее время до 10:00 (МСК).");
+            }
+
 
 
         } catch (IOException e) {

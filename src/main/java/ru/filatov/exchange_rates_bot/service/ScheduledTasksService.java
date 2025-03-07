@@ -87,7 +87,10 @@ public class ScheduledTasksService {
 
     }
 
-    @Scheduled(cron = "0 */3 9-11 * * *", zone = "Europe/Moscow")
+    @Scheduled(cron = "0 30-59/3 9 * * *", zone = "Europe/Moscow") // 9:30 - 9:59 каждые 3 минуты
+    @Scheduled(cron = "0 0-45/3 10 * * *", zone = "Europe/Moscow") // 10:00 - 10:30 каждые 3 минуты
+
+
     public void scheduledDataCheck() {
         LocalDate targetDate = LocalDate.now().minusDays(2); // Сегодня -2 дня
 
