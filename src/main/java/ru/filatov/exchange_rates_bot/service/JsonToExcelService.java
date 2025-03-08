@@ -28,11 +28,13 @@ public class JsonToExcelService {
     private static final String RESOURCE_KEY = "f92e60f5-3a1e-499b-9361-33e9d8757529";
     public final Map<LocalDate, Boolean> processedDates = new HashMap<>();
 
-    LocalDate beforeyesterday = LocalDate.now().minusDays(4);
-    LocalDate yesterday = LocalDate.now().minusDays(3);
-    LocalDate today = LocalDate.now().minusDays(2);
+
 
     private void fetchData() {
+        LocalDate beforeyesterday = LocalDate.now().minusDays(4);
+        LocalDate yesterday = LocalDate.now().minusDays(3);
+        LocalDate today = LocalDate.now().minusDays(2);
+
         // Запрашиваем данные за вчера и сегодня для Kaushany GMS (Moldova)
         fetchDataForDateAndPoint(beforeyesterday, "Kaushany GMS (Moldova)");
         fetchDataForDateAndPoint(yesterday, "Kaushany GMS (Moldova)");
