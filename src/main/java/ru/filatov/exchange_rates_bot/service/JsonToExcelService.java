@@ -34,7 +34,6 @@ public class JsonToExcelService {
         LocalDate beforeyesterday = LocalDate.now().minusDays(4);
         LocalDate yesterday = LocalDate.now().minusDays(3);
         LocalDate today = LocalDate.now().minusDays(2);
-
         // Запрашиваем данные за вчера и сегодня для Kaushany GMS (Moldova)
         fetchDataForDateAndPoint(beforeyesterday, "Kaushany GMS (Moldova)");
         fetchDataForDateAndPoint(yesterday, "Kaushany GMS (Moldova)");
@@ -51,7 +50,9 @@ public class JsonToExcelService {
 
     public ExcelFile downloadAndSaveData() throws IOException {
         Map<LocalDate, Map<String, String>> dataMap = new LinkedHashMap<>();
-
+        LocalDate beforeyesterday = LocalDate.now().minusDays(4);
+        LocalDate yesterday = LocalDate.now().minusDays(3);
+        LocalDate today = LocalDate.now().minusDays(2);
         // Запрашиваем данные
         processData(dataMap, beforeyesterday, "Kaushany GMS (Moldova)", "Каушаны_физика");
         processData(dataMap, yesterday, "Kaushany GMS (Moldova)", "Каушаны_физика");
